@@ -1,4 +1,4 @@
-C51 COMPILER V9.01   MAIN                                                                  08/13/2016 19:54:26 PAGE 1   
+C51 COMPILER V9.01   MAIN                                                                  08/14/2016 01:15:03 PAGE 1   
 
 
 C51 COMPILER V9.01, COMPILATION OF MODULE MAIN
@@ -62,7 +62,7 @@ line level    source
   53          /*————————————————————————————————————————————————————
              -————————————————*/
   54          
-C51 COMPILER V9.01   MAIN                                                                  08/13/2016 19:54:26 PAGE 2   
+C51 COMPILER V9.01   MAIN                                                                  08/14/2016 01:15:03 PAGE 2   
 
   55          /******   STATUS寄存器bit位定义      *******/
   56          #define MAX_TX    0x10      //达到最大发送次数中断
@@ -126,7 +126,7 @@ line level    source
  114   2          byte=(byte<<1);         // shift next bit to MSB
  115   2          NRF_SCK=1;
  116   2          byte|=NRF_MISO;             // capture current MISO bit
-C51 COMPILER V9.01   MAIN                                                                  08/13/2016 19:54:26 PAGE 3   
+C51 COMPILER V9.01   MAIN                                                                  08/14/2016 01:15:03 PAGE 3   
 
  117   2          NRF_SCK=0;
  118   2        }
@@ -190,7 +190,7 @@ line level    source
  176          /*           len   数组字节长度               */
  177          /**********************************************/
  178          uchar NRF24L01_Write_Buf(uchar reg, uchar *pBuf, uchar len)
-C51 COMPILER V9.01   MAIN                                                                  08/13/2016 19:54:26 PAGE 4   
+C51 COMPILER V9.01   MAIN                                                                  08/14/2016 01:15:03 PAGE 4   
 
  179          {
  180   1        uchar status,u8_ctr;
@@ -254,7 +254,7 @@ line level    source
  238   1        return 0xff;                      //发送失败
  239   1      }
  240          
-C51 COMPILER V9.01   MAIN                                                                  08/13/2016 19:54:26 PAGE 5   
+C51 COMPILER V9.01   MAIN                                                                  08/14/2016 01:15:03 PAGE 5   
 
  241          /********************************************/
  242          /* 函数功能：检测24L01是否存在              */
@@ -318,7 +318,7 @@ line level    source
  298   1        NRF24L01_RT_Init();
  299   1        while(1)
  300   1        {
-C51 COMPILER V9.01   MAIN                                                                  08/13/2016 19:54:26 PAGE 6   
+C51 COMPILER V9.01   MAIN                                                                  08/14/2016 01:15:03 PAGE 6   
 
  301   2          if(NRF_IRQ==0)    // 如果无线模块接收到数据
  302   2          {
