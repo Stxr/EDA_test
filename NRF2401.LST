@@ -1,0 +1,384 @@
+C51 COMPILER V9.01   NRF2401                                                               08/14/2016 10:37:47 PAGE 1   
+
+
+C51 COMPILER V9.01, COMPILATION OF MODULE NRF2401
+OBJECT MODULE PLACED IN NRF2401.OBJ
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE NRF2401.c BROWSE DEBUG OBJECTEXTEND TABS(2)
+
+line level    source
+
+   1          /**********************************************************/
+   2          /* 名   称：NRF24L01+无线USB通信模块程序                  */
+   3          /* 功   能：发送接收测试程序                              */
+   4          /*          格式：首位是个数，后面跟要发送的数据          */
+   5          /*                例如：发送5个字节 11 22 33 44 55(16进制)*/
+   6          /*                电脑串口发送：1122334455                */
+   7          /*                模块实际发送：051122334455              */
+   8          /* 作者：BQDZ     （论坛：http://bqdz.taobao.com）        */
+   9          /* 联系方式： QQ :851968194     旺旺：王亚坤2864          */
+  10          /*           手机：15821472722（上海）                    */
+  11          /**********************************************************/
+  12          #include<reg51.h>
+  13          #include<string.h>
+  14          #include<intrins.h>
+  15          #include<stdlib.h>
+  16          #define uchar unsigned char
+  17          #define uint  unsigned int
+  18          
+  19          /**********  NRF24L01寄存器操作命令  ***********/
+  20          #define READ_REG        0x00  //读配置寄存器,低5位为寄存器地址
+  21          #define WRITE_REG       0x20  //写配置寄存器,低5位为寄存器地址
+  22          #define RD_RX_PLOAD     0x61  //读RX有效数据,1~32字节
+  23          #define WR_TX_PLOAD     0xA0  //写TX有效数据,1~32字节
+  24          #define FLUSH_TX        0xE1  //清除TX FIFO寄存器.发射模式下用
+  25          #define FLUSH_RX        0xE2  //清除RX FIFO寄存器.接收模式下用
+  26          #define REUSE_TX_PL     0xE3  //重新使用上一包数据,CE为高,数据包被不断发送.
+  27          #define NOP             0xFF  //空操作,可以用来读状态寄存器
+  28          /**********  NRF24L01寄存器地址   *************/
+  29          #define CONFIG          0x00  //配置寄存器地址
+  30          #define EN_AA           0x01  //使能自动应答功能
+  31          #define EN_RXADDR       0x02  //接收地址允许
+  32          #define SETUP_AW        0x03  //设置地址宽度(所有数据通道)
+  33          #define SETUP_RETR      0x04  //建立自动重发
+  34          #define RF_CH           0x05  //RF通道
+  35          #define RF_SETUP        0x06  //RF寄存器
+  36          #define STATUS          0x07  //状态寄存器
+  37          #define OBSERVE_TX      0x08  // 发送检测寄存器
+  38          #define CD              0x09  // 载波检测寄存器
+  39          #define RX_ADDR_P0      0x0A  // 数据通道0接收地址
+  40          #define RX_ADDR_P1      0x0B  // 数据通道1接收地址
+  41          #define RX_ADDR_P2      0x0C  // 数据通道2接收地址
+  42          #define RX_ADDR_P3      0x0D  // 数据通道3接收地址
+  43          #define RX_ADDR_P4      0x0E  // 数据通道4接收地址
+  44          #define RX_ADDR_P5      0x0F  // 数据通道5接收地址
+  45          #define TX_ADDR         0x10  // 发送地址寄存器
+  46          #define RX_PW_P0        0x11  // 接收数据通道0有效数据宽度(1~32字节)
+  47          #define RX_PW_P1        0x12  // 接收数据通道1有效数据宽度(1~32字节)
+  48          #define RX_PW_P2        0x13  // 接收数据通道2有效数据宽度(1~32字节)
+  49          #define RX_PW_P3        0x14  // 接收数据通道3有效数据宽度(1~32字节)
+  50          #define RX_PW_P4        0x15  // 接收数据通道4有效数据宽度(1~32字节)
+  51          #define RX_PW_P5        0x16  // 接收数据通道5有效数据宽度(1~32字节)
+  52          #define FIFO_STATUS     0x17  // FIFO状态寄存器
+  53          /*————————————————————————————————————————————————————
+             -————————————————*/
+  54          
+C51 COMPILER V9.01   NRF2401                                                               08/14/2016 10:37:47 PAGE 2   
+
+  55          /******   STATUS寄存器bit位定义      *******/
+  56          #define MAX_TX    0x10      //达到最大发送次数中断
+  57          #define TX_OK     0x20      //TX发送完成中断
+  58          #define RX_OK     0x40      //接收到数据中断
+  59          /*——————————————————————————————————————————————————*/
+  60          
+  61          /*********     24L01发送接收数据宽度定义    ***********/
+  62          #define TX_ADR_WIDTH    5     //5字节地址宽度
+  63          #define RX_ADR_WIDTH    5     //5字节地址宽度
+  64          #define TX_PLOAD_WIDTH  32    //32字节有效数据宽度
+  65          #define RX_PLOAD_WIDTH  32    //32字节有效数据宽度
+  66          
+  67          const uchar TX_ADDRESS[TX_ADR_WIDTH]={0xFF,0xFF,0xFF,0xFF,0xFF}; //发送地址
+  68          const uchar RX_ADDRESS[RX_ADR_WIDTH]={0xFF,0xFF,0xFF,0xFF,0xFF}; //发送地址
+  69          
+  70          sbit NRF_CE   = P2^7;
+  71          sbit NRF_CSN  = P2^6;
+  72          sbit NRF_MISO = P2^3;
+  73          sbit NRF_MOSI = P2^4;
+  74          sbit NRF_SCK  = P2^5;
+  75          sbit NRF_IRQ  = P2^2;
+  76          sbit LED=P1^0;
+  77          
+  78          sbit S1=P3^2;
+  79          sbit S2=P3^4;
+  80          uchar rece_buf[32];
+  81          
+  82          void Sendlength(uchar *buff);
+  83          int intlen(int num);//计算int类型的数的长度
+  84          void Int_to_char(int num,char *buffer);//将整数拆开放入数组里
+  85          void sendstring(char *buffer);//发送数组
+  86          
+  87          void delay_us(uchar num)
+  88          {
+  89   1        uchar i;
+  90   1        for(i=0;i>num;i++)
+  91   1        _nop_();
+  92   1      }
+  93          void delay_150us()
+  94          {
+  95   1        uint i;
+  96   1      
+  97   1        for(i=0;i>150;i++);
+  98   1      }
+  99          void delay(uint t)
+ 100          {
+ 101   1        uchar k;
+ 102   1        while(t--)
+ 103   1        for(k=0;k<200;k++);
+ 104   1      }
+ 105          /***************************************************************/
+ 106          
+ 107          /*******************************************************************/
+ 108          uchar SPI_RW(uchar byte)
+ 109          {
+ 110   1        uchar bit_ctr;
+ 111   1        for(bit_ctr=0;bit_ctr<8;bit_ctr++)  // 输出8位
+ 112   1        {
+ 113   2          NRF_MOSI=(byte&0x80);       // MSB TO MOSI
+ 114   2          byte=(byte<<1);         // shift next bit to MSB
+ 115   2          NRF_SCK=1;
+ 116   2          byte|=NRF_MISO;             // capture current MISO bit
+C51 COMPILER V9.01   NRF2401                                                               08/14/2016 10:37:47 PAGE 3   
+
+ 117   2          NRF_SCK=0;
+ 118   2        }
+ 119   1        return byte;
+ 120   1      }
+ 121          
+ 122          /*********************************************/
+ 123          /* 函数功能：给24L01的寄存器写值（一个字节） */
+ 124          /* 入口参数：reg   要写的寄存器地址          */
+ 125          /*           value 给寄存器写的值            */
+ 126          /* 出口参数：status 状态值                   */
+ 127          /*********************************************/
+ 128          uchar NRF24L01_Write_Reg(uchar reg,uchar value)
+ 129          {
+ 130   1        uchar status;
+ 131   1      
+ 132   1        NRF_CSN=0;                  //CSN=0;
+ 133   1          status = SPI_RW(reg);   //发送寄存器地址,并读取状态值
+ 134   1        SPI_RW(value);
+ 135   1        NRF_CSN=1;                  //CSN=1;
+ 136   1      
+ 137   1        return status;
+ 138   1      }
+ 139          /*************************************************/
+ 140          /* 函数功能：读24L01的寄存器值 （一个字节）      */
+ 141          /* 入口参数：reg  要读的寄存器地址               */
+ 142          /* 出口参数：value 读出寄存器的值                */
+ 143          /*************************************************/
+ 144          uchar NRF24L01_Read_Reg(uchar reg)
+ 145          {
+ 146   1        uchar value;
+ 147   1      
+ 148   1        NRF_CSN=0;              //CSN=0;
+ 149   1          SPI_RW(reg);      //发送寄存器值(位置),并读取状态值
+ 150   1        value = SPI_RW(NOP);
+ 151   1        NRF_CSN=1;              //CSN=1;
+ 152   1      
+ 153   1        return value;
+ 154   1      }
+ 155          /*********************************************/
+ 156          /* 函数功能：读24L01的寄存器值（多个字节）   */
+ 157          /* 入口参数：reg   寄存器地址                */
+ 158          /*           *pBuf 读出寄存器值的存放数组    */
+ 159          /*           len   数组字节长度              */
+ 160          /* 出口参数：status 状态值                   */
+ 161          /*********************************************/
+ 162          uchar NRF24L01_Read_Buf(uchar reg,uchar *pBuf,uchar len)
+ 163          {
+ 164   1        uchar status,u8_ctr;
+ 165   1        NRF_CSN=0;                    //CSN=0
+ 166   1          status=SPI_RW(reg);       //发送寄存器地址,并读取状态值
+ 167   1        for(u8_ctr=0;u8_ctr<len;u8_ctr++)
+ 168   1        pBuf[u8_ctr]=SPI_RW(0XFF);    //读出数据
+ 169   1        NRF_CSN=1;                    //CSN=1
+ 170   1          return status;              //返回读到的状态值
+ 171   1      }
+ 172          /**********************************************/
+ 173          /* 函数功能：给24L01的寄存器写值（多个字节）  */
+ 174          /* 入口参数：reg  要写的寄存器地址            */
+ 175          /*           *pBuf 值的存放数组               */
+ 176          /*           len   数组字节长度               */
+ 177          /**********************************************/
+ 178          uchar NRF24L01_Write_Buf(uchar reg, uchar *pBuf, uchar len)
+C51 COMPILER V9.01   NRF2401                                                               08/14/2016 10:37:47 PAGE 4   
+
+ 179          {
+ 180   1        uchar status,u8_ctr;
+ 181   1        NRF_CSN=0;
+ 182   1          status = SPI_RW(reg);     //发送寄存器值(位置),并读取状态值
+ 183   1          for(u8_ctr=0; u8_ctr<len; u8_ctr++)
+ 184   1        SPI_RW(*pBuf++);        //写入数据
+ 185   1        NRF_CSN=1;
+ 186   1          return status;              //返回读到的状态值
+ 187   1      }
+ 188          
+ 189          /*********************************************/
+ 190          /* 函数功能：24L01接收数据                   */
+ 191          /* 入口参数：rxbuf 接收数据数组              */
+ 192          /* 返回值： 0   成功收到数据                 */
+ 193          /*          1   没有收到数据                 */
+ 194          /*********************************************/
+ 195          uchar NRF24L01_RxPacket(uchar *rxbuf)
+ 196          {
+ 197   1        uchar state;
+ 198   1      
+ 199   1        state=NRF24L01_Read_Reg(STATUS);        //读取状态寄存器的值
+ 200   1        NRF24L01_Write_Reg(WRITE_REG+STATUS,state); //清除TX_DS或MAX_RT中断标志
+ 201   1        if(state&RX_OK)               //接收到数据
+ 202   1        {
+ 203   2          NRF_CE = 0;
+ 204   2          NRF24L01_Read_Buf(RD_RX_PLOAD,rxbuf,RX_PLOAD_WIDTH);//读取数据
+ 205   2          NRF24L01_Write_Reg(FLUSH_RX,0xff);          //清除RX FIFO寄存器
+ 206   2          NRF_CE = 1;
+ 207   2          delay_150us();
+ 208   2          return 0;
+ 209   2        }
+ 210   1        return 1;//没收到任何数据
+ 211   1      }
+ 212          /**********************************************/
+ 213          /* 函数功能：设置24L01为发送模式              */
+ 214          /* 入口参数：txbuf  发送数据数组              */
+ 215          /* 返回值； 0x10    达到最大重发次数，发送失败*/
+ 216          /*          0x20    成功发送完成              */
+ 217          /*          0xff    发送失败                  */
+ 218          /**********************************************/
+ 219          uchar NRF24L01_TxPacket(uchar *txbuf)
+ 220          {
+ 221   1        uchar state;
+ 222   1      
+ 223   1        NRF_CE=0;                       //CE拉低，使能24L01配置
+ 224   1          NRF24L01_Write_Buf(WR_TX_PLOAD,txbuf,TX_PLOAD_WIDTH); //写数据到TX BUF  32个字节
+ 225   1        NRF_CE=1;                       //CE置高，使能发送
+ 226   1        while(NRF_IRQ==1);                    //等待发送完成
+ 227   1        state=NRF24L01_Read_Reg(STATUS);              //读取状态寄存器的值
+ 228   1        NRF24L01_Write_Reg(WRITE_REG+STATUS,state);       //清除TX_DS或MAX_RT中断标志
+ 229   1        if(state&MAX_TX)                    //达到最大重发次数
+ 230   1        {
+ 231   2          NRF24L01_Write_Reg(FLUSH_TX,0xff);          //清除TX FIFO寄存器
+ 232   2          return MAX_TX;
+ 233   2        }
+ 234   1        if(state&TX_OK)                     //发送完成
+ 235   1        {
+ 236   2          return TX_OK;
+ 237   2        }
+ 238   1        return 0xff;                      //发送失败
+ 239   1      }
+ 240          
+C51 COMPILER V9.01   NRF2401                                                               08/14/2016 10:37:47 PAGE 5   
+
+ 241          /********************************************/
+ 242          /* 函数功能：检测24L01是否存在              */
+ 243          /* 返回值；  0  存在                        */
+ 244          /*           1  不存在                      */
+ 245          /********************************************/
+ 246          uchar NRF24L01_Check(void)
+ 247          {
+ 248   1        uchar check_in_buf[5]={0x11,0x22,0x33,0x44,0x55};
+ 249   1        uchar check_out_buf[5]={0x00};
+ 250   1      
+ 251   1        NRF_SCK=0;
+ 252   1        NRF_CSN=1;
+ 253   1        NRF_CE=0;
+ 254   1      
+ 255   1        NRF24L01_Write_Buf(WRITE_REG+TX_ADDR, check_in_buf, 5);
+ 256   1      
+ 257   1        NRF24L01_Read_Buf(READ_REG+TX_ADDR, check_out_buf, 5);
+ 258   1      
+ 259   1        if((check_out_buf[0] == 0x11)&&\
+ 260   1           (check_out_buf[1] == 0x22)&&\
+ 261   1           (check_out_buf[2] == 0x33)&&\
+ 262   1           (check_out_buf[3] == 0x44)&&\
+ 263   1           (check_out_buf[4] == 0x55))return 0;
+ 264   1        else return 1;
+ 265   1      }
+ 266          
+ 267          
+ 268          void NRF24L01_RT_Init(void)
+ 269          {
+ 270   1        NRF_CE=0;
+ 271   1          NRF24L01_Write_Reg(WRITE_REG+RX_PW_P0,RX_PLOAD_WIDTH);//选择通道0的有效数据宽度
+ 272   1          NRF24L01_Write_Reg(FLUSH_RX,0xff);                  //清除RX FIFO寄存器
+ 273   1          NRF24L01_Write_Buf(WRITE_REG+TX_ADDR,(uchar*)TX_ADDRESS,TX_ADR_WIDTH);//写TX节点地址
+ 274   1          NRF24L01_Write_Buf(WRITE_REG+RX_ADDR_P0,(uchar*)RX_ADDRESS,RX_ADR_WIDTH); //设置TX节点地址,主要为了使能
+             -ACK
+ 275   1          NRF24L01_Write_Reg(WRITE_REG+EN_AA,0x01);     //使能通道0的自动应答
+ 276   1          NRF24L01_Write_Reg(WRITE_REG+EN_RXADDR,0x01); //使能通道0的接收地址
+ 277   1          NRF24L01_Write_Reg(WRITE_REG+SETUP_RETR,0x1a);//设置自动重发间隔时间:500us + 86us;最大自动重发次数:10次
+ 278   1          NRF24L01_Write_Reg(WRITE_REG+RF_CH,0);        //设置RF通道为2.400GHz  频率=2.4+0GHz
+ 279   1          NRF24L01_Write_Reg(WRITE_REG+RF_SETUP,0x0F);  //设置TX发射参数,0db增益,2Mbps,低噪声增益开启
+ 280   1          NRF24L01_Write_Reg(WRITE_REG+CONFIG,0x0f);    //配置基本工作模式的参数;PWR_UP,EN_CRC,16BIT_CRC,接收模式
+             -,开启所有中断
+ 281   1        NRF_CE=1;                   //CE置高，使能发送
+ 282   1      }
+ 283          
+ 284          void SEND_BUF(char *buf)
+ 285          {
+ 286   1        NRF_CE=0;
+ 287   1        NRF24L01_Write_Reg(WRITE_REG+CONFIG,0x0e);
+ 288   1        NRF_CE=1;
+ 289   1        delay_us(15);
+ 290   1        NRF24L01_TxPacket(buf);
+ 291   1        NRF_CE=0;
+ 292   1        NRF24L01_Write_Reg(WRITE_REG+CONFIG, 0x0f);
+ 293   1        NRF_CE=1;
+ 294   1      }
+ 295          int main(void)
+ 296          {
+ 297   1        while(NRF24L01_Check()); // 等待检测到NRF24L01，程序才会向下执行
+ 298   1        NRF24L01_RT_Init();
+ 299   1        while(1)
+ 300   1        {
+C51 COMPILER V9.01   NRF2401                                                               08/14/2016 10:37:47 PAGE 6   
+
+ 301   2          if(NRF_IRQ==0)    // 如果无线模块接收到数据
+ 302   2          {
+ 303   3            if(NRF24L01_RxPacket(rece_buf)==0)
+ 304   3            {
+ 305   4              Sendlength(rece_buf);
+ 306   4            }
+ 307   3          }
+ 308   2        }
+ 309   1        return 0;
+ 310   1      }
+ 311          void Sendlength(uchar *buff)
+ 312          {
+ 313   1        int length,count=0;
+ 314   1        length=strlen(buff);
+ 315   1        buff[0]=intlen(length) ;//发送数组的最高位数
+ 316   1        Int_to_char(length-1,buff);
+ 317   1        SEND_BUF(buff);
+ 318   1      }
+ 319          int intlen(int num)//计算int类型的数的长度
+ 320          {
+ 321   1        int count=0;
+ 322   1        while(num)
+ 323   1        {
+ 324   2          count++;
+ 325   2          num/=10;
+ 326   2        }
+ 327   1        return count;
+ 328   1      }
+ 329          void Int_to_char(int num,char *buffer)//将整数拆开放入数组里
+ 330          {
+ 331   1        int i=0;
+ 332   1        for(i=intlen(num);i>0;i--)
+ 333   1        {
+ 334   2          buffer[i]=(num)%10+0x30;
+ 335   2          num/=10;
+ 336   2        }
+ 337   1      }
+ 338          void sendstring(uchar *buffer)//发送数组
+ 339          {
+ 340   1        int i;
+ 341   1        char buffer1[32];
+ 342   1        for(i=strlen(buffer)-1;i>=0;i--)
+ 343   1        {
+ 344   2          buffer1[i+1]=buffer[i];
+ 345   2        }
+ 346   1        buffer1[0]=strlen(buffer);
+ 347   1        SEND_BUF(buffer1);
+ 348   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    801    ----
+   CONSTANT SIZE    =     10    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     42      72
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
