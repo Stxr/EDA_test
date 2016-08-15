@@ -1,5 +1,7 @@
 "main.obj",
 "delay.obj",
 "LCD1602.obj",
-"keydown.obj" 
+"digital_control.obj",
+"I2C.obj",
+"EEPROM.obj" 
 TO "EDC_test" 

@@ -47,7 +47,7 @@
           <OutputName>EDC_test</OutputName>
           <CreateExecutable>1</CreateExecutable>
           <CreateLib>0</CreateLib>
-          <CreateHexFile>0</CreateHexFile>
+          <CreateHexFile>1</CreateHexFile>
           <DebugInformation>1</DebugInformation>
           <BrowseInformation>1</BrowseInformation>
           <ListingPath>.\</ListingPath>
@@ -218,7 +218,7 @@
               <RCB>
                 <Type>0</Type>
                 <StartAddress>0x0</StartAddress>
-                <Size>0x0</Size>
+                <Size>0x10000</Size>
               </RCB>
               <RXB>
                 <Type>0</Type>
@@ -365,6 +365,21 @@
               <FileName>LCD1602.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\LCD1602.c</FilePath>
+            </File>
+            <File>
+              <FileName>digital_control.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\digital_control.c</FilePath>
+            </File>
+            <File>
+              <FileName>I2C.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\I2C.c</FilePath>
+            </File>
+            <File>
+              <FileName>EEPROM.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\EEPROM.c</FilePath>
             </File>
           </Files>
         </Group>
