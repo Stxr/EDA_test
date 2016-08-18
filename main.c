@@ -1,25 +1,35 @@
 #include <reg51.h>
 #include "delay.h"
 #include "LCD1602.h"
-// #include "keydown.h" //键盘
 #include "digital_control.h"//数码管
 #include "I2C.h"
 #include "EEPROM.h"
+
 #define GPIO_KEY P1
+#define DIG_GPIO_DUAN P0
+#define DIG_GPIO_WEI P2
 sbit led=P2^7;
+
 char Keydown(void);
 void Interrupt_Init(void);
 void TIM_Init(void);
 void Usart_Init(void);
+void Display_digital(void);
+
+
 char flag=0;
-char test[]={'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
+unsigned char code DIG_PLACE[8]={0xfe,0xfd,0xfb,0xf7,0xef,0xdf,0xbf,0x7f};//位选控制   查表的方法控制
+unsigned char code DIG_CODE[17]={0x3f,0x06,0x5b,0x4f,0x66,0x6d,0x7d,0x07,0x7f,0x6f,0x77,0x7c,0x39,0x5e,0x79,0x71};  //0~F的显示码
+char test[20]=0;
 char flag_key;
 int timer=0;
 char keyvalue;
+
 int main(void)
 {
+  int i=0,a;
   // char num;
-  // Usart_Init();
+  Usart_Init();
   // TIM_Init();
   // Interrupt_Init();
   // LCD1602_Init();// LCD初始化
@@ -29,8 +39,31 @@ int main(void)
   // LCD1602_Writedata(num+'0');
   while(1)
   {
-
+    Keydown();
+    if(flag_key)
+    {
+      flag_key=0;
+      test[0]=DIG_CODE[keyvalue];
+      // Delay_5ms();
+      for(i=20;i>=0;i--)
+      {
+        test[i]=test[i-1];
+      }
+    }
+    Display_digital();
   //  led=flag;
+  }
+}
+void Display_digital()
+{
+  int i,j;
+  for(i=0;i<8;i++)
+  {
+    DIG_GPIO_DUAN=test[i];
+    DIG_GPIO_WEI=DIG_PLACE[i];
+    j=300;
+    while(j--);
+    DIG_GPIO_DUAN=0X00;
   }
 }
 
@@ -64,7 +97,7 @@ char Keydown(void)//按键
   }
   return keyvalue;
 }
-void Interrupt_Init(void)
+void Interrupt_Init(void) //外部中断初始化
 {
   EA=1;
   EX0=1;
@@ -73,7 +106,7 @@ void Interrupt_Init(void)
   EX1=1;
   IT1=1;
 }
-void TIM_Init(void)
+void TIM_Init(void)//定时器初始化
 {
   EA=1;
   TMOD=0x01;//工作方式1

@@ -302,6 +302,10 @@ int main(void)
 		{
 			if(NRF24L01_RxPacket(rece_buf)==0)
 			{
+				// tcnt=rece_buf[0];
+				// rece_buf[1]=tcnt+0x30;
+				// rece_buf[0]=1;
+				// SEND_BUF(rece_buf);
 				Sendlength(rece_buf);
 			}
 		}
@@ -312,7 +316,7 @@ void Sendlength(uchar *buff)
 {
 	int length,count=0;
 	length=strlen(buff);
-	buff[0]=intlen(length) ;//发送数组的最高位数
+	buff[0]=intlen(length-1) ;//发送数组的最高位数
   Int_to_char(length-1,buff);
 	SEND_BUF(buff);
 }

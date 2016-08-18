@@ -367,11 +367,6 @@
               <FilePath>.\LCD1602.c</FilePath>
             </File>
             <File>
-              <FileName>digital_control.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\digital_control.c</FilePath>
-            </File>
-            <File>
               <FileName>I2C.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\I2C.c</FilePath>

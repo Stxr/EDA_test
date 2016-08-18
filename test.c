@@ -8,8 +8,10 @@ void Int_to_char(int num,char *buffer);//将整数拆开放入数组里
 void sendstring(char *buffer);//发送数组
 int main(void)
 {
-  char a[32]="ADas125";
-  sendstring(a);
+  int a=0x10;
+  printf("%c\n",a);
+  // char a[32]="ADas125";
+  // sendstring(a);
 //  Sendlength(a);
 }
 void Sendlength(char *buff)
