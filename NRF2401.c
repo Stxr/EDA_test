@@ -1,13 +1,13 @@
 /**********************************************************/
-/* Ãû   ³Æ£ºNRF24L01+ÎÞÏßUSBÍ¨ÐÅÄ£¿é³ÌÐò                  */
-/* ¹¦   ÄÜ£º·¢ËÍ½ÓÊÕ²âÊÔ³ÌÐò                              */
-/*          ¸ñÊ½£ºÊ×Î»ÊÇ¸öÊý£¬ºóÃæ¸úÒª·¢ËÍµÄÊý¾Ý          */
-/*                ÀýÈç£º·¢ËÍ5¸ö×Ö½Ú 11 22 33 44 55(16½øÖÆ)*/
-/*                µçÄÔ´®¿Ú·¢ËÍ£º1122334455                */
-/*                Ä£¿éÊµ¼Ê·¢ËÍ£º051122334455              */
-/* ×÷Õß£ºBQDZ     £¨ÂÛÌ³£ºhttp://bqdz.taobao.com£©        */
-/* ÁªÏµ·½Ê½£º QQ :851968194     ÍúÍú£ºÍõÑÇÀ¤2864          */
-/*           ÊÖ»ú£º15821472722£¨ÉÏº££©                    */
+/* å   ç§°ï¼šNRF24L01+æ— çº¿USBé€šä¿¡æ¨¡å—ç¨‹åº                  */
+/* åŠŸ   èƒ½ï¼šå‘é€æŽ¥æ”¶æµ‹è¯•ç¨‹åº                              */
+/*          æ ¼å¼ï¼šé¦–ä½æ˜¯ä¸ªæ•°ï¼ŒåŽé¢è·Ÿè¦å‘é€çš„æ•°æ®          */
+/*                ä¾‹å¦‚ï¼šå‘é€5ä¸ªå­—èŠ‚ 11 22 33 44 55(16è¿›åˆ¶)*/
+/*                ç”µè„‘ä¸²å£å‘é€ï¼š1122334455                */
+/*                æ¨¡å—å®žé™…å‘é€ï¼š051122334455              */
+/* ä½œè€…ï¼šBQDZ     ï¼ˆè®ºå›ï¼šhttp://bqdz.taobao.comï¼‰        */
+/* è”ç³»æ–¹å¼ï¼š QQ :851968194     æ—ºæ—ºï¼šçŽ‹äºšå¤2864          */
+/*           æ‰‹æœºï¼š15821472722ï¼ˆä¸Šæµ·ï¼‰                    */
 /**********************************************************/
 #include<reg51.h>
 #include<string.h>
@@ -16,56 +16,56 @@
 #define uchar unsigned char
 #define uint  unsigned int
 
-/**********  NRF24L01¼Ä´æÆ÷²Ù×÷ÃüÁî  ***********/
-#define READ_REG        0x00  //¶ÁÅäÖÃ¼Ä´æÆ÷,µÍ5Î»Îª¼Ä´æÆ÷µØÖ·
-#define WRITE_REG       0x20  //Ð´ÅäÖÃ¼Ä´æÆ÷,µÍ5Î»Îª¼Ä´æÆ÷µØÖ·
-#define RD_RX_PLOAD     0x61  //¶ÁRXÓÐÐ§Êý¾Ý,1~32×Ö½Ú
-#define WR_TX_PLOAD     0xA0  //Ð´TXÓÐÐ§Êý¾Ý,1~32×Ö½Ú
-#define FLUSH_TX        0xE1  //Çå³ýTX FIFO¼Ä´æÆ÷.·¢ÉäÄ£Ê½ÏÂÓÃ
-#define FLUSH_RX        0xE2  //Çå³ýRX FIFO¼Ä´æÆ÷.½ÓÊÕÄ£Ê½ÏÂÓÃ
-#define REUSE_TX_PL     0xE3  //ÖØÐÂÊ¹ÓÃÉÏÒ»°üÊý¾Ý,CEÎª¸ß,Êý¾Ý°ü±»²»¶Ï·¢ËÍ.
-#define NOP             0xFF  //¿Õ²Ù×÷,¿ÉÒÔÓÃÀ´¶Á×´Ì¬¼Ä´æÆ÷
-/**********  NRF24L01¼Ä´æÆ÷µØÖ·   *************/
-#define CONFIG          0x00  //ÅäÖÃ¼Ä´æÆ÷µØÖ·
-#define EN_AA           0x01  //Ê¹ÄÜ×Ô¶¯Ó¦´ð¹¦ÄÜ
-#define EN_RXADDR       0x02  //½ÓÊÕµØÖ·ÔÊÐí
-#define SETUP_AW        0x03  //ÉèÖÃµØÖ·¿í¶È(ËùÓÐÊý¾ÝÍ¨µÀ)
-#define SETUP_RETR      0x04  //½¨Á¢×Ô¶¯ÖØ·¢
-#define RF_CH           0x05  //RFÍ¨µÀ
-#define RF_SETUP        0x06  //RF¼Ä´æÆ÷
-#define STATUS          0x07  //×´Ì¬¼Ä´æÆ÷
-#define OBSERVE_TX      0x08  // ·¢ËÍ¼ì²â¼Ä´æÆ÷
-#define CD              0x09  // ÔØ²¨¼ì²â¼Ä´æÆ÷
-#define RX_ADDR_P0      0x0A  // Êý¾ÝÍ¨µÀ0½ÓÊÕµØÖ·
-#define RX_ADDR_P1      0x0B  // Êý¾ÝÍ¨µÀ1½ÓÊÕµØÖ·
-#define RX_ADDR_P2      0x0C  // Êý¾ÝÍ¨µÀ2½ÓÊÕµØÖ·
-#define RX_ADDR_P3      0x0D  // Êý¾ÝÍ¨µÀ3½ÓÊÕµØÖ·
-#define RX_ADDR_P4      0x0E  // Êý¾ÝÍ¨µÀ4½ÓÊÕµØÖ·
-#define RX_ADDR_P5      0x0F  // Êý¾ÝÍ¨µÀ5½ÓÊÕµØÖ·
-#define TX_ADDR         0x10  // ·¢ËÍµØÖ·¼Ä´æÆ÷
-#define RX_PW_P0        0x11  // ½ÓÊÕÊý¾ÝÍ¨µÀ0ÓÐÐ§Êý¾Ý¿í¶È(1~32×Ö½Ú)
-#define RX_PW_P1        0x12  // ½ÓÊÕÊý¾ÝÍ¨µÀ1ÓÐÐ§Êý¾Ý¿í¶È(1~32×Ö½Ú)
-#define RX_PW_P2        0x13  // ½ÓÊÕÊý¾ÝÍ¨µÀ2ÓÐÐ§Êý¾Ý¿í¶È(1~32×Ö½Ú)
-#define RX_PW_P3        0x14  // ½ÓÊÕÊý¾ÝÍ¨µÀ3ÓÐÐ§Êý¾Ý¿í¶È(1~32×Ö½Ú)
-#define RX_PW_P4        0x15  // ½ÓÊÕÊý¾ÝÍ¨µÀ4ÓÐÐ§Êý¾Ý¿í¶È(1~32×Ö½Ú)
-#define RX_PW_P5        0x16  // ½ÓÊÕÊý¾ÝÍ¨µÀ5ÓÐÐ§Êý¾Ý¿í¶È(1~32×Ö½Ú)
-#define FIFO_STATUS     0x17  // FIFO×´Ì¬¼Ä´æÆ÷
-/*¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª*/
+/**********  NRF24L01å¯„å­˜å™¨æ“ä½œå‘½ä»¤  ***********/
+#define READ_REG        0x00  //è¯»é…ç½®å¯„å­˜å™¨,ä½Ž5ä½ä¸ºå¯„å­˜å™¨åœ°å€
+#define WRITE_REG       0x20  //å†™é…ç½®å¯„å­˜å™¨,ä½Ž5ä½ä¸ºå¯„å­˜å™¨åœ°å€
+#define RD_RX_PLOAD     0x61  //è¯»RXæœ‰æ•ˆæ•°æ®,1~32å­—èŠ‚
+#define WR_TX_PLOAD     0xA0  //å†™TXæœ‰æ•ˆæ•°æ®,1~32å­—èŠ‚
+#define FLUSH_TX        0xE1  //æ¸…é™¤TX FIFOå¯„å­˜å™¨.å‘å°„æ¨¡å¼ä¸‹ç”¨
+#define FLUSH_RX        0xE2  //æ¸…é™¤RX FIFOå¯„å­˜å™¨.æŽ¥æ”¶æ¨¡å¼ä¸‹ç”¨
+#define REUSE_TX_PL     0xE3  //é‡æ–°ä½¿ç”¨ä¸Šä¸€åŒ…æ•°æ®,CEä¸ºé«˜,æ•°æ®åŒ…è¢«ä¸æ–­å‘é€.
+#define NOP             0xFF  //ç©ºæ“ä½œ,å¯ä»¥ç”¨æ¥è¯»çŠ¶æ€å¯„å­˜å™¨
+/**********  NRF24L01å¯„å­˜å™¨åœ°å€   *************/
+#define CONFIG          0x00  //é…ç½®å¯„å­˜å™¨åœ°å€
+#define EN_AA           0x01  //ä½¿èƒ½è‡ªåŠ¨åº”ç­”åŠŸèƒ½
+#define EN_RXADDR       0x02  //æŽ¥æ”¶åœ°å€å…è®¸
+#define SETUP_AW        0x03  //è®¾ç½®åœ°å€å®½åº¦(æ‰€æœ‰æ•°æ®é€šé“)
+#define SETUP_RETR      0x04  //å»ºç«‹è‡ªåŠ¨é‡å‘
+#define RF_CH           0x05  //RFé€šé“
+#define RF_SETUP        0x06  //RFå¯„å­˜å™¨
+#define STATUS          0x07  //çŠ¶æ€å¯„å­˜å™¨
+#define OBSERVE_TX      0x08  // å‘é€æ£€æµ‹å¯„å­˜å™¨
+#define CD              0x09  // è½½æ³¢æ£€æµ‹å¯„å­˜å™¨
+#define RX_ADDR_P0      0x0A  // æ•°æ®é€šé“0æŽ¥æ”¶åœ°å€
+#define RX_ADDR_P1      0x0B  // æ•°æ®é€šé“1æŽ¥æ”¶åœ°å€
+#define RX_ADDR_P2      0x0C  // æ•°æ®é€šé“2æŽ¥æ”¶åœ°å€
+#define RX_ADDR_P3      0x0D  // æ•°æ®é€šé“3æŽ¥æ”¶åœ°å€
+#define RX_ADDR_P4      0x0E  // æ•°æ®é€šé“4æŽ¥æ”¶åœ°å€
+#define RX_ADDR_P5      0x0F  // æ•°æ®é€šé“5æŽ¥æ”¶åœ°å€
+#define TX_ADDR         0x10  // å‘é€åœ°å€å¯„å­˜å™¨
+#define RX_PW_P0        0x11  // æŽ¥æ”¶æ•°æ®é€šé“0æœ‰æ•ˆæ•°æ®å®½åº¦(1~32å­—èŠ‚)
+#define RX_PW_P1        0x12  // æŽ¥æ”¶æ•°æ®é€šé“1æœ‰æ•ˆæ•°æ®å®½åº¦(1~32å­—èŠ‚)
+#define RX_PW_P2        0x13  // æŽ¥æ”¶æ•°æ®é€šé“2æœ‰æ•ˆæ•°æ®å®½åº¦(1~32å­—èŠ‚)
+#define RX_PW_P3        0x14  // æŽ¥æ”¶æ•°æ®é€šé“3æœ‰æ•ˆæ•°æ®å®½åº¦(1~32å­—èŠ‚)
+#define RX_PW_P4        0x15  // æŽ¥æ”¶æ•°æ®é€šé“4æœ‰æ•ˆæ•°æ®å®½åº¦(1~32å­—èŠ‚)
+#define RX_PW_P5        0x16  // æŽ¥æ”¶æ•°æ®é€šé“5æœ‰æ•ˆæ•°æ®å®½åº¦(1~32å­—èŠ‚)
+#define FIFO_STATUS     0x17  // FIFOçŠ¶æ€å¯„å­˜å™¨
+/*â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”*/
 
-/******   STATUS¼Ä´æÆ÷bitÎ»¶¨Òå      *******/
-#define MAX_TX  	0x10  	  //´ïµ½×î´ó·¢ËÍ´ÎÊýÖÐ¶Ï
-#define TX_OK   	0x20  	  //TX·¢ËÍÍê³ÉÖÐ¶Ï
-#define RX_OK   	0x40  	  //½ÓÊÕµ½Êý¾ÝÖÐ¶Ï
-/*¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª¡ª*/
+/******   STATUSå¯„å­˜å™¨bitä½å®šä¹‰      *******/
+#define MAX_TX  	0x10  	  //è¾¾åˆ°æœ€å¤§å‘é€æ¬¡æ•°ä¸­æ–­
+#define TX_OK   	0x20  	  //TXå‘é€å®Œæˆä¸­æ–­
+#define RX_OK   	0x40  	  //æŽ¥æ”¶åˆ°æ•°æ®ä¸­æ–­
+/*â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”*/
 
-/*********     24L01·¢ËÍ½ÓÊÕÊý¾Ý¿í¶È¶¨Òå	  ***********/
-#define TX_ADR_WIDTH    5     //5×Ö½ÚµØÖ·¿í¶È
-#define RX_ADR_WIDTH    5     //5×Ö½ÚµØÖ·¿í¶È
-#define TX_PLOAD_WIDTH  32    //32×Ö½ÚÓÐÐ§Êý¾Ý¿í¶È
-#define RX_PLOAD_WIDTH  32    //32×Ö½ÚÓÐÐ§Êý¾Ý¿í¶È
+/*********     24L01å‘é€æŽ¥æ”¶æ•°æ®å®½åº¦å®šä¹‰	  ***********/
+#define TX_ADR_WIDTH    5     //5å­—èŠ‚åœ°å€å®½åº¦
+#define RX_ADR_WIDTH    5     //5å­—èŠ‚åœ°å€å®½åº¦
+#define TX_PLOAD_WIDTH  32    //32å­—èŠ‚æœ‰æ•ˆæ•°æ®å®½åº¦
+#define RX_PLOAD_WIDTH  32    //32å­—èŠ‚æœ‰æ•ˆæ•°æ®å®½åº¦
 
-const uchar TX_ADDRESS[TX_ADR_WIDTH]={0xFF,0xFF,0xFF,0xFF,0xFF}; //·¢ËÍµØÖ·
-const uchar RX_ADDRESS[RX_ADR_WIDTH]={0xFF,0xFF,0xFF,0xFF,0xFF}; //·¢ËÍµØÖ·
+const uchar TX_ADDRESS[TX_ADR_WIDTH]={0xFF,0xFF,0xFF,0xFF,0xFF}; //å‘é€åœ°å€
+const uchar RX_ADDRESS[RX_ADR_WIDTH]={0xFF,0xFF,0xFF,0xFF,0xFF}; //å‘é€åœ°å€
 
 sbit NRF_CE   = P2^7;
 sbit NRF_CSN  = P2^6;
@@ -80,9 +80,9 @@ sbit S2=P3^4;
 uchar rece_buf[32];
 
 void Sendlength(uchar *buff);
-int intlen(int num);//¼ÆËãintÀàÐÍµÄÊýµÄ³¤¶È
-void Int_to_char(int num,char *buffer);//½«ÕûÊý²ð¿ª·ÅÈëÊý×éÀï
-void sendstring(char *buffer);//·¢ËÍÊý×é
+int intlen(int num);//è®¡ç®—intç±»åž‹çš„æ•°çš„é•¿åº¦
+void Int_to_char(int num,char *buffer);//å°†æ•´æ•°æ‹†å¼€æ”¾å…¥æ•°ç»„é‡Œ
+void sendstring(char *buffer);//å‘é€æ•°ç»„
 
 void delay_us(uchar num)
 {
@@ -108,7 +108,7 @@ void delay(uint t)
 uchar SPI_RW(uchar byte)
 {
 	uchar bit_ctr;
-	for(bit_ctr=0;bit_ctr<8;bit_ctr++)  // Êä³ö8Î»
+	for(bit_ctr=0;bit_ctr<8;bit_ctr++)  // è¾“å‡º8ä½
 	{
 		NRF_MOSI=(byte&0x80); 			// MSB TO MOSI
 		byte=(byte<<1);					// shift next bit to MSB
@@ -120,128 +120,128 @@ uchar SPI_RW(uchar byte)
 }
 
 /*********************************************/
-/* º¯Êý¹¦ÄÜ£º¸ø24L01µÄ¼Ä´æÆ÷Ð´Öµ£¨Ò»¸ö×Ö½Ú£© */
-/* Èë¿Ú²ÎÊý£ºreg   ÒªÐ´µÄ¼Ä´æÆ÷µØÖ·          */
-/*           value ¸ø¼Ä´æÆ÷Ð´µÄÖµ            */
-/* ³ö¿Ú²ÎÊý£ºstatus ×´Ì¬Öµ                   */
+/* å‡½æ•°åŠŸèƒ½ï¼šç»™24L01çš„å¯„å­˜å™¨å†™å€¼ï¼ˆä¸€ä¸ªå­—èŠ‚ï¼‰ */
+/* å…¥å£å‚æ•°ï¼šreg   è¦å†™çš„å¯„å­˜å™¨åœ°å€          */
+/*           value ç»™å¯„å­˜å™¨å†™çš„å€¼            */
+/* å‡ºå£å‚æ•°ï¼šstatus çŠ¶æ€å€¼                   */
 /*********************************************/
 uchar NRF24L01_Write_Reg(uchar reg,uchar value)
 {
 	uchar status;
 
 	NRF_CSN=0;                  //CSN=0;
-  	status = SPI_RW(reg);		//·¢ËÍ¼Ä´æÆ÷µØÖ·,²¢¶ÁÈ¡×´Ì¬Öµ
+  	status = SPI_RW(reg);		//å‘é€å¯„å­˜å™¨åœ°å€,å¹¶è¯»å–çŠ¶æ€å€¼
 	SPI_RW(value);
 	NRF_CSN=1;                  //CSN=1;
 
 	return status;
 }
 /*************************************************/
-/* º¯Êý¹¦ÄÜ£º¶Á24L01µÄ¼Ä´æÆ÷Öµ £¨Ò»¸ö×Ö½Ú£©      */
-/* Èë¿Ú²ÎÊý£ºreg  Òª¶ÁµÄ¼Ä´æÆ÷µØÖ·               */
-/* ³ö¿Ú²ÎÊý£ºvalue ¶Á³ö¼Ä´æÆ÷µÄÖµ                */
+/* å‡½æ•°åŠŸèƒ½ï¼šè¯»24L01çš„å¯„å­˜å™¨å€¼ ï¼ˆä¸€ä¸ªå­—èŠ‚ï¼‰      */
+/* å…¥å£å‚æ•°ï¼šreg  è¦è¯»çš„å¯„å­˜å™¨åœ°å€               */
+/* å‡ºå£å‚æ•°ï¼švalue è¯»å‡ºå¯„å­˜å™¨çš„å€¼                */
 /*************************************************/
 uchar NRF24L01_Read_Reg(uchar reg)
 {
  	uchar value;
 
 	NRF_CSN=0;              //CSN=0;
-  	SPI_RW(reg);			//·¢ËÍ¼Ä´æÆ÷Öµ(Î»ÖÃ),²¢¶ÁÈ¡×´Ì¬Öµ
+  	SPI_RW(reg);			//å‘é€å¯„å­˜å™¨å€¼(ä½ç½®),å¹¶è¯»å–çŠ¶æ€å€¼
 	value = SPI_RW(NOP);
 	NRF_CSN=1;             	//CSN=1;
 
 	return value;
 }
 /*********************************************/
-/* º¯Êý¹¦ÄÜ£º¶Á24L01µÄ¼Ä´æÆ÷Öµ£¨¶à¸ö×Ö½Ú£©   */
-/* Èë¿Ú²ÎÊý£ºreg   ¼Ä´æÆ÷µØÖ·                */
-/*           *pBuf ¶Á³ö¼Ä´æÆ÷ÖµµÄ´æ·ÅÊý×é    */
-/*           len   Êý×é×Ö½Ú³¤¶È              */
-/* ³ö¿Ú²ÎÊý£ºstatus ×´Ì¬Öµ                   */
+/* å‡½æ•°åŠŸèƒ½ï¼šè¯»24L01çš„å¯„å­˜å™¨å€¼ï¼ˆå¤šä¸ªå­—èŠ‚ï¼‰   */
+/* å…¥å£å‚æ•°ï¼šreg   å¯„å­˜å™¨åœ°å€                */
+/*           *pBuf è¯»å‡ºå¯„å­˜å™¨å€¼çš„å­˜æ”¾æ•°ç»„    */
+/*           len   æ•°ç»„å­—èŠ‚é•¿åº¦              */
+/* å‡ºå£å‚æ•°ï¼šstatus çŠ¶æ€å€¼                   */
 /*********************************************/
 uchar NRF24L01_Read_Buf(uchar reg,uchar *pBuf,uchar len)
 {
 	uchar status,u8_ctr;
 	NRF_CSN=0;                   	//CSN=0
-  	status=SPI_RW(reg);				//·¢ËÍ¼Ä´æÆ÷µØÖ·,²¢¶ÁÈ¡×´Ì¬Öµ
+  	status=SPI_RW(reg);				//å‘é€å¯„å­˜å™¨åœ°å€,å¹¶è¯»å–çŠ¶æ€å€¼
  	for(u8_ctr=0;u8_ctr<len;u8_ctr++)
-	pBuf[u8_ctr]=SPI_RW(0XFF);		//¶Á³öÊý¾Ý
+	pBuf[u8_ctr]=SPI_RW(0XFF);		//è¯»å‡ºæ•°æ®
 	NRF_CSN=1;                 		//CSN=1
-  	return status;        			//·µ»Ø¶Áµ½µÄ×´Ì¬Öµ
+  	return status;        			//è¿”å›žè¯»åˆ°çš„çŠ¶æ€å€¼
 }
 /**********************************************/
-/* º¯Êý¹¦ÄÜ£º¸ø24L01µÄ¼Ä´æÆ÷Ð´Öµ£¨¶à¸ö×Ö½Ú£©  */
-/* Èë¿Ú²ÎÊý£ºreg  ÒªÐ´µÄ¼Ä´æÆ÷µØÖ·            */
-/*           *pBuf ÖµµÄ´æ·ÅÊý×é               */
-/*           len   Êý×é×Ö½Ú³¤¶È               */
+/* å‡½æ•°åŠŸèƒ½ï¼šç»™24L01çš„å¯„å­˜å™¨å†™å€¼ï¼ˆå¤šä¸ªå­—èŠ‚ï¼‰  */
+/* å…¥å£å‚æ•°ï¼šreg  è¦å†™çš„å¯„å­˜å™¨åœ°å€            */
+/*           *pBuf å€¼çš„å­˜æ”¾æ•°ç»„               */
+/*           len   æ•°ç»„å­—èŠ‚é•¿åº¦               */
 /**********************************************/
 uchar NRF24L01_Write_Buf(uchar reg, uchar *pBuf, uchar len)
 {
 	uchar status,u8_ctr;
 	NRF_CSN=0;
-  	status = SPI_RW(reg);			//·¢ËÍ¼Ä´æÆ÷Öµ(Î»ÖÃ),²¢¶ÁÈ¡×´Ì¬Öµ
+  	status = SPI_RW(reg);			//å‘é€å¯„å­˜å™¨å€¼(ä½ç½®),å¹¶è¯»å–çŠ¶æ€å€¼
   	for(u8_ctr=0; u8_ctr<len; u8_ctr++)
-	SPI_RW(*pBuf++); 				//Ð´ÈëÊý¾Ý
+	SPI_RW(*pBuf++); 				//å†™å…¥æ•°æ®
 	NRF_CSN=1;
-  	return status;          		//·µ»Ø¶Áµ½µÄ×´Ì¬Öµ
+  	return status;          		//è¿”å›žè¯»åˆ°çš„çŠ¶æ€å€¼
 }
 
 /*********************************************/
-/* º¯Êý¹¦ÄÜ£º24L01½ÓÊÕÊý¾Ý                   */
-/* Èë¿Ú²ÎÊý£ºrxbuf ½ÓÊÕÊý¾ÝÊý×é              */
-/* ·µ»ØÖµ£º 0   ³É¹¦ÊÕµ½Êý¾Ý                 */
-/*          1   Ã»ÓÐÊÕµ½Êý¾Ý                 */
+/* å‡½æ•°åŠŸèƒ½ï¼š24L01æŽ¥æ”¶æ•°æ®                   */
+/* å…¥å£å‚æ•°ï¼šrxbuf æŽ¥æ”¶æ•°æ®æ•°ç»„              */
+/* è¿”å›žå€¼ï¼š 0   æˆåŠŸæ”¶åˆ°æ•°æ®                 */
+/*          1   æ²¡æœ‰æ”¶åˆ°æ•°æ®                 */
 /*********************************************/
 uchar NRF24L01_RxPacket(uchar *rxbuf)
 {
 	uchar state;
 
-	state=NRF24L01_Read_Reg(STATUS);  			//¶ÁÈ¡×´Ì¬¼Ä´æÆ÷µÄÖµ
-	NRF24L01_Write_Reg(WRITE_REG+STATUS,state); //Çå³ýTX_DS»òMAX_RTÖÐ¶Ï±êÖ¾
-	if(state&RX_OK)								//½ÓÊÕµ½Êý¾Ý
+	state=NRF24L01_Read_Reg(STATUS);  			//è¯»å–çŠ¶æ€å¯„å­˜å™¨çš„å€¼
+	NRF24L01_Write_Reg(WRITE_REG+STATUS,state); //æ¸…é™¤TX_DSæˆ–MAX_RTä¸­æ–­æ ‡å¿—
+	if(state&RX_OK)								//æŽ¥æ”¶åˆ°æ•°æ®
 	{
 		NRF_CE = 0;
-		NRF24L01_Read_Buf(RD_RX_PLOAD,rxbuf,RX_PLOAD_WIDTH);//¶ÁÈ¡Êý¾Ý
-		NRF24L01_Write_Reg(FLUSH_RX,0xff);					//Çå³ýRX FIFO¼Ä´æÆ÷
+		NRF24L01_Read_Buf(RD_RX_PLOAD,rxbuf,RX_PLOAD_WIDTH);//è¯»å–æ•°æ®
+		NRF24L01_Write_Reg(FLUSH_RX,0xff);					//æ¸…é™¤RX FIFOå¯„å­˜å™¨
 		NRF_CE = 1;
 		delay_150us();
 		return 0;
 	}
-	return 1;//Ã»ÊÕµ½ÈÎºÎÊý¾Ý
+	return 1;//æ²¡æ”¶åˆ°ä»»ä½•æ•°æ®
 }
 /**********************************************/
-/* º¯Êý¹¦ÄÜ£ºÉèÖÃ24L01Îª·¢ËÍÄ£Ê½              */
-/* Èë¿Ú²ÎÊý£ºtxbuf  ·¢ËÍÊý¾ÝÊý×é              */
-/* ·µ»ØÖµ£» 0x10    ´ïµ½×î´óÖØ·¢´ÎÊý£¬·¢ËÍÊ§°Ü*/
-/*          0x20    ³É¹¦·¢ËÍÍê³É              */
-/*          0xff    ·¢ËÍÊ§°Ü                  */
+/* å‡½æ•°åŠŸèƒ½ï¼šè®¾ç½®24L01ä¸ºå‘é€æ¨¡å¼              */
+/* å…¥å£å‚æ•°ï¼štxbuf  å‘é€æ•°æ®æ•°ç»„              */
+/* è¿”å›žå€¼ï¼› 0x10    è¾¾åˆ°æœ€å¤§é‡å‘æ¬¡æ•°ï¼Œå‘é€å¤±è´¥*/
+/*          0x20    æˆåŠŸå‘é€å®Œæˆ              */
+/*          0xff    å‘é€å¤±è´¥                  */
 /**********************************************/
 uchar NRF24L01_TxPacket(uchar *txbuf)
 {
 	uchar state;
 
-	NRF_CE=0;												//CEÀ­µÍ£¬Ê¹ÄÜ24L01ÅäÖÃ
-  	NRF24L01_Write_Buf(WR_TX_PLOAD,txbuf,TX_PLOAD_WIDTH);	//Ð´Êý¾Ýµ½TX BUF  32¸ö×Ö½Ú
- 	NRF_CE=1;												//CEÖÃ¸ß£¬Ê¹ÄÜ·¢ËÍ
-	while(NRF_IRQ==1);										//µÈ´ý·¢ËÍÍê³É
-	state=NRF24L01_Read_Reg(STATUS);  						//¶ÁÈ¡×´Ì¬¼Ä´æÆ÷µÄÖµ
-	NRF24L01_Write_Reg(WRITE_REG+STATUS,state); 			//Çå³ýTX_DS»òMAX_RTÖÐ¶Ï±êÖ¾
-	if(state&MAX_TX)										//´ïµ½×î´óÖØ·¢´ÎÊý
+	NRF_CE=0;												//CEæ‹‰ä½Žï¼Œä½¿èƒ½24L01é…ç½®
+  	NRF24L01_Write_Buf(WR_TX_PLOAD,txbuf,TX_PLOAD_WIDTH);	//å†™æ•°æ®åˆ°TX BUF  32ä¸ªå­—èŠ‚
+ 	NRF_CE=1;												//CEç½®é«˜ï¼Œä½¿èƒ½å‘é€
+	while(NRF_IRQ==1);										//ç­‰å¾…å‘é€å®Œæˆ
+	state=NRF24L01_Read_Reg(STATUS);  						//è¯»å–çŠ¶æ€å¯„å­˜å™¨çš„å€¼
+	NRF24L01_Write_Reg(WRITE_REG+STATUS,state); 			//æ¸…é™¤TX_DSæˆ–MAX_RTä¸­æ–­æ ‡å¿—
+	if(state&MAX_TX)										//è¾¾åˆ°æœ€å¤§é‡å‘æ¬¡æ•°
 	{
-		NRF24L01_Write_Reg(FLUSH_TX,0xff);					//Çå³ýTX FIFO¼Ä´æÆ÷
+		NRF24L01_Write_Reg(FLUSH_TX,0xff);					//æ¸…é™¤TX FIFOå¯„å­˜å™¨
 		return MAX_TX;
 	}
-	if(state&TX_OK)											//·¢ËÍÍê³É
+	if(state&TX_OK)											//å‘é€å®Œæˆ
 	{
 		return TX_OK;
 	}
-	return 0xff;											//·¢ËÍÊ§°Ü
+	return 0xff;											//å‘é€å¤±è´¥
 }
 
 /********************************************/
-/* º¯Êý¹¦ÄÜ£º¼ì²â24L01ÊÇ·ñ´æÔÚ              */
-/* ·µ»ØÖµ£»  0  ´æÔÚ                        */
-/*           1  ²»´æÔÚ                      */
+/* å‡½æ•°åŠŸèƒ½ï¼šæ£€æµ‹24L01æ˜¯å¦å­˜åœ¨              */
+/* è¿”å›žå€¼ï¼›  0  å­˜åœ¨                        */
+/*           1  ä¸å­˜åœ¨                      */
 /********************************************/
 uchar NRF24L01_Check(void)
 {
@@ -268,17 +268,17 @@ uchar NRF24L01_Check(void)
 void NRF24L01_RT_Init(void)
 {
 	NRF_CE=0;
-  	NRF24L01_Write_Reg(WRITE_REG+RX_PW_P0,RX_PLOAD_WIDTH);//Ñ¡ÔñÍ¨µÀ0µÄÓÐÐ§Êý¾Ý¿í¶È
-		NRF24L01_Write_Reg(FLUSH_RX,0xff);									//Çå³ýRX FIFO¼Ä´æÆ÷
-  	NRF24L01_Write_Buf(WRITE_REG+TX_ADDR,(uchar*)TX_ADDRESS,TX_ADR_WIDTH);//Ð´TX½ÚµãµØÖ·
-  	NRF24L01_Write_Buf(WRITE_REG+RX_ADDR_P0,(uchar*)RX_ADDRESS,RX_ADR_WIDTH); //ÉèÖÃTX½ÚµãµØÖ·,Ö÷ÒªÎªÁËÊ¹ÄÜACK
-  	NRF24L01_Write_Reg(WRITE_REG+EN_AA,0x01);     //Ê¹ÄÜÍ¨µÀ0µÄ×Ô¶¯Ó¦´ð
-  	NRF24L01_Write_Reg(WRITE_REG+EN_RXADDR,0x01); //Ê¹ÄÜÍ¨µÀ0µÄ½ÓÊÕµØÖ·
-  	NRF24L01_Write_Reg(WRITE_REG+SETUP_RETR,0x1a);//ÉèÖÃ×Ô¶¯ÖØ·¢¼ä¸ôÊ±¼ä:500us + 86us;×î´ó×Ô¶¯ÖØ·¢´ÎÊý:10´Î
-  	NRF24L01_Write_Reg(WRITE_REG+RF_CH,0);        //ÉèÖÃRFÍ¨µÀÎª2.400GHz  ÆµÂÊ=2.4+0GHz
-  	NRF24L01_Write_Reg(WRITE_REG+RF_SETUP,0x0F);  //ÉèÖÃTX·¢Éä²ÎÊý,0dbÔöÒæ,2Mbps,µÍÔëÉùÔöÒæ¿ªÆô
-  	NRF24L01_Write_Reg(WRITE_REG+CONFIG,0x0f);    //ÅäÖÃ»ù±¾¹¤×÷Ä£Ê½µÄ²ÎÊý;PWR_UP,EN_CRC,16BIT_CRC,½ÓÊÕÄ£Ê½,¿ªÆôËùÓÐÖÐ¶Ï
-	NRF_CE=1;									  //CEÖÃ¸ß£¬Ê¹ÄÜ·¢ËÍ
+  	NRF24L01_Write_Reg(WRITE_REG+RX_PW_P0,RX_PLOAD_WIDTH);//é€‰æ‹©é€šé“0çš„æœ‰æ•ˆæ•°æ®å®½åº¦
+		NRF24L01_Write_Reg(FLUSH_RX,0xff);									//æ¸…é™¤RX FIFOå¯„å­˜å™¨
+  	NRF24L01_Write_Buf(WRITE_REG+TX_ADDR,(uchar*)TX_ADDRESS,TX_ADR_WIDTH);//å†™TXèŠ‚ç‚¹åœ°å€
+  	NRF24L01_Write_Buf(WRITE_REG+RX_ADDR_P0,(uchar*)RX_ADDRESS,RX_ADR_WIDTH); //è®¾ç½®TXèŠ‚ç‚¹åœ°å€,ä¸»è¦ä¸ºäº†ä½¿èƒ½ACK
+  	NRF24L01_Write_Reg(WRITE_REG+EN_AA,0x01);     //ä½¿èƒ½é€šé“0çš„è‡ªåŠ¨åº”ç­”
+  	NRF24L01_Write_Reg(WRITE_REG+EN_RXADDR,0x01); //ä½¿èƒ½é€šé“0çš„æŽ¥æ”¶åœ°å€
+  	NRF24L01_Write_Reg(WRITE_REG+SETUP_RETR,0x1a);//è®¾ç½®è‡ªåŠ¨é‡å‘é—´éš”æ—¶é—´:500us + 86us;æœ€å¤§è‡ªåŠ¨é‡å‘æ¬¡æ•°:10æ¬¡
+  	NRF24L01_Write_Reg(WRITE_REG+RF_CH,0);        //è®¾ç½®RFé€šé“ä¸º2.400GHz  é¢‘çŽ‡=2.4+0GHz
+  	NRF24L01_Write_Reg(WRITE_REG+RF_SETUP,0x0F);  //è®¾ç½®TXå‘å°„å‚æ•°,0dbå¢žç›Š,2Mbps,ä½Žå™ªå£°å¢žç›Šå¼€å¯
+  	NRF24L01_Write_Reg(WRITE_REG+CONFIG,0x0f);    //é…ç½®åŸºæœ¬å·¥ä½œæ¨¡å¼çš„å‚æ•°;PWR_UP,EN_CRC,16BIT_CRC,æŽ¥æ”¶æ¨¡å¼,å¼€å¯æ‰€æœ‰ä¸­æ–­
+	NRF_CE=1;									  //CEç½®é«˜ï¼Œä½¿èƒ½å‘é€
 }
 
 void SEND_BUF(char *buf)
@@ -294,11 +294,11 @@ void SEND_BUF(char *buf)
 }
 int main(void)
 {
-	while(NRF24L01_Check()); // µÈ´ý¼ì²âµ½NRF24L01£¬³ÌÐò²Å»áÏòÏÂÖ´ÐÐ
+	while(NRF24L01_Check()); // ç­‰å¾…æ£€æµ‹åˆ°NRF24L01ï¼Œç¨‹åºæ‰ä¼šå‘ä¸‹æ‰§è¡Œ
 	NRF24L01_RT_Init();
 	while(1)
 	{
-		if(NRF_IRQ==0)	 	// Èç¹ûÎÞÏßÄ£¿é½ÓÊÕµ½Êý¾Ý
+		if(NRF_IRQ==0)	 	// å¦‚æžœæ— çº¿æ¨¡å—æŽ¥æ”¶åˆ°æ•°æ®
 		{
 			if(NRF24L01_RxPacket(rece_buf)==0)
 			{
@@ -316,11 +316,11 @@ void Sendlength(uchar *buff)
 {
 	int length,count=0;
 	length=strlen(buff);
-	buff[0]=intlen(length-1) ;//·¢ËÍÊý×éµÄ×î¸ßÎ»Êý
+	buff[0]=intlen(length-1) ;//å‘é€æ•°ç»„çš„æœ€é«˜ä½æ•°
   Int_to_char(length-1,buff);
 	SEND_BUF(buff);
 }
-int intlen(int num)//¼ÆËãintÀàÐÍµÄÊýµÄ³¤¶È
+int intlen(int num)//è®¡ç®—intç±»åž‹çš„æ•°çš„é•¿åº¦
 {
   int count=0;
   while(num)
@@ -330,7 +330,7 @@ int intlen(int num)//¼ÆËãintÀàÐÍµÄÊýµÄ³¤¶È
   }
   return count;
 }
-void Int_to_char(int num,char *buffer)//½«ÕûÊý²ð¿ª·ÅÈëÊý×éÀï
+void Int_to_char(int num,char *buffer)//å°†æ•´æ•°æ‹†å¼€æ”¾å…¥æ•°ç»„é‡Œ
 {
   int i=0;
   for(i=intlen(num);i>0;i--)
@@ -339,7 +339,7 @@ void Int_to_char(int num,char *buffer)//½«ÕûÊý²ð¿ª·ÅÈëÊý×éÀï
     num/=10;
   }
 }
-void sendstring(uchar *buffer)//·¢ËÍÊý×é
+void sendstring(uchar *buffer)//å‘é€æ•°ç»„
 {
   int i;
   char buffer1[32];
