@@ -1,6 +1,7 @@
 #include "I2C.h"
 sbit I2C_SDA=P2^0;
 sbit I2C_SCL=P2^1;
+static char i=0;
 void I2C_start(void)
 {
   I2C_SDA=1;
@@ -23,7 +24,7 @@ void I2C_end(void)
 }
 char I2C_sendbyte(char dat)
 {
-  char i=0,t;
+  char t;
   I2C_SCL=0;
   for(i=0;i<8;i++)
   {
@@ -54,7 +55,7 @@ char I2C_sendbyte(char dat)
 }
 char I2C_readbyte(void)
 {
-  char i=0,dat=0;
+  char dat=0;
   I2C_SDA=1;
   for(i=0;i<8;i++)
   {

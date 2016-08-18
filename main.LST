@@ -1,4 +1,4 @@
-C51 COMPILER V9.01   MAIN                                                                  08/18/2016 09:17:28 PAGE 1   
+C51 COMPILER V9.01   MAIN                                                                  08/18/2016 19:59:31 PAGE 1   
 
 
 C51 COMPILER V9.01, COMPILATION OF MODULE MAIN
@@ -10,184 +10,208 @@ line level    source
    1          #include <reg51.h>
    2          #include "delay.h"
    3          #include "LCD1602.h"
-   4          #include "digital_control.h"//数码管
-   5          #include "I2C.h"
-   6          #include "EEPROM.h"
-   7          
-   8          #define GPIO_KEY P1
-   9          #define DIG_GPIO_DUAN P0
-  10          #define DIG_GPIO_WEI P2
-  11          sbit led=P2^7;
-  12          
-  13          char Keydown(void);
-  14          void Interrupt_Init(void);
-  15          void TIM_Init(void);
-  16          void Usart_Init(void);
-  17          void Display_digital(void);
-  18          
+   4          #include "I2C.h"
+   5          #include "EEPROM.h"
+   6          #include "NRF2401.h"
+   7          #define GPIO_KEY P1
+   8          #define DIG_GPIO_DUAN P0
+   9          #define DIG_GPIO_WEI P2
+  10          
+  11          
+  12          sbit NRF_IR  = P2^2;
+  13          //char Keydown(void);
+  14          //void Interrupt_Init(void);
+  15          //void TIM_Init(void);
+  16          //void Usart_Init(void);
+  17          //void Display_digital(void);
+  18          //void Usart_pro(void);
   19          
-  20          char flag=0;
-  21          unsigned char code DIG_PLACE[8]={0xfe,0xfd,0xfb,0xf7,0xef,0xdf,0xbf,0x7f};//位选控制   查表的方法
+  20          //char flag=0;
+  21          unsigned char rece_buf[32];
+  22          unsigned char code DIG_PLACE[8]={0xfe,0xfd,0xfb,0xf7,0xef,0xdf,0xbf,0x7f};//位选控制   查表的方法
              -控制
-  22          unsigned char code DIG_CODE[17]={0x3f,0x06,0x5b,0x4f,0x66,0x6d,0x7d,0x07,0x7f,0x6f,0x77,0x7c,0x39,0x5e,0x7
+  23          unsigned char code DIG_CODE[17]={0x3f,0x06,0x5b,0x4f,0x66,0x6d,0x7d,0x07,0x7f,0x6f,0x77,0x7c,0x39,0x5e,0x7
              -9,0x71};  //0~F的显示码
-  23          char test[20]=0;
-  24          char flag_key;
-  25          int timer=0;
-  26          char keyvalue;
-  27          
-  28          int main(void)
-  29          {
-  30   1        int i=0,a;
-  31   1        // char num;
-  32   1        Usart_Init();
-  33   1        // TIM_Init();
-  34   1        // Interrupt_Init();
-  35   1        // LCD1602_Init();// LCD初始化
-  36   1        // AT24C02_write(2,3);
-  37   1        // LCD1602_Writedata('A');
-  38   1        // num=AT24C02_read(2);
-  39   1        // LCD1602_Writedata(num+'0');
-  40   1        while(1)
-  41   1        {
-  42   2          Keydown();
-  43   2          if(flag_key)
-  44   2          {
-  45   3            flag_key=0;
-  46   3            test[0]=DIG_CODE[keyvalue];
-  47   3            // Delay_5ms();
-  48   3            for(i=20;i>=0;i--)
-  49   3            {
-  50   4              test[i]=test[i-1];
-  51   4            }
-  52   3          }
-  53   2          Display_digital();
-C51 COMPILER V9.01   MAIN                                                                  08/18/2016 09:17:28 PAGE 2   
+  24          //char uart_buff[32],uart_i=0;
+  25          //char test[32]=0;
+  26          //char flag_key;
+  27          //int timer=0;
+  28          //char keyvalue;
+  29          
+  30          int main(void)
+  31          {
+  32   1      //  int i=0,a;
+  33   1      //  char num;
+  34   1        // Usart_Init();
+  35   1        // TIM_Init();
+  36   1        // Interrupt_Init();
+  37   1        LCD1602_Init();// LCD初始化
+  38   1        // LCD1602_Writedata('G');
+  39   1        // while(NRF24L01_Check()); // 等待检测到NRF24L01，程序才会向下执行
+  40   1        NRF24L01_RT_Init();
+  41   1        LCD1602_Writedata('A');
+  42   1        while(1)
+  43   1        {
+  44   2        //  if(NRF_IR==0)   // 如果无线模块接收到数据
+  45   2          {
+  46   3            if(NRF24L01_RxPacket(rece_buf)==0)
+  47   3            {
+  48   4              // LCD1602_Writedata('A');
+  49   4              Sendlength(rece_buf);
+  50   4            }
+  51   3          }
+  52   2         // Keydown();
+  53   2      //    if(keyvalue!=15)
+C51 COMPILER V9.01   MAIN                                                                  08/18/2016 19:59:31 PAGE 2   
 
-  54   2        //  led=flag;
-  55   2        }
-  56   1      }
-*** WARNING C280 IN LINE 30 OF MAIN.C: 'a': unreferenced local variable
-  57          void Display_digital()
-  58          {
-  59   1        int i,j;
-  60   1        for(i=0;i<8;i++)
-  61   1        {
-  62   2          DIG_GPIO_DUAN=test[i];
-  63   2          DIG_GPIO_WEI=DIG_PLACE[i];
-  64   2          j=300;
-  65   2          while(j--);
-  66   2          DIG_GPIO_DUAN=0X00;
-  67   2        }
-  68   1      }
-  69          
-  70          char Keydown(void)//按键
-  71          {
-  72   1        GPIO_KEY=0X0F;
-  73   1        if(GPIO_KEY!=0X0F)
-  74   1        {
-  75   2          Delay_5ms();
-  76   2          if(GPIO_KEY!=0X0F)
-  77   2          {
-  78   3            flag_key=1;
-  79   3            GPIO_KEY=0X0F;
-  80   3            switch (GPIO_KEY)
-  81   3             {
-  82   4              case 0X07: keyvalue=0;  break;
-  83   4              case 0x0B: keyvalue=1;  break;
-  84   4              case 0x0D: keyvalue=2;  break;
-  85   4              case 0x0E: keyvalue=3;  break;
-  86   4            }
-  87   3            GPIO_KEY=0XF0;
-  88   3            switch (GPIO_KEY)
-  89   3            {
-  90   4              case 0X70: keyvalue+=0;  break;
-  91   4              case 0xB0: keyvalue+=4;  break;
-  92   4              case 0xD0: keyvalue+=8;  break;
-  93   4              case 0xE0: keyvalue+=12; break;
-  94   4            }
-  95   3            while(GPIO_KEY!=0XF0);
-  96   3          }
-  97   2        }
-  98   1        return keyvalue;
-  99   1      }
- 100          void Interrupt_Init(void) //外部中断初始化
- 101          {
- 102   1        EA=1;
- 103   1        EX0=1;
- 104   1        IT0=1;//下降沿触发
- 105   1      
- 106   1        EX1=1;
- 107   1        IT1=1;
- 108   1      }
- 109          void TIM_Init(void)//定时器初始化
- 110          {
- 111   1        EA=1;
- 112   1        TMOD=0x01;//工作方式1
- 113   1        TH0=(65536-1000)/256;
- 114   1        TL0=(65536-1000)%256;
-C51 COMPILER V9.01   MAIN                                                                  08/18/2016 09:17:28 PAGE 3   
+  54   2      //    {
+  55   2      //      AT24C02_write(2,keyvalue);
+  56   2      //    }
+  57   2      
+  58   2      //    num=AT24C02_read(2);
+  59   2      //    LCD1602_Writedata(num+'0');
+  60   2          // if(flag_key)
+  61   2          // {
+  62   2          //   flag_key=0;
+  63   2          //   test[0]=DIG_CODE[keyvalue];
+  64   2          //   // Delay_5ms();
+  65   2          //   for(i=20;i>=0;i--)
+  66   2          //   {
+  67   2          //     test[i]=test[i-1];
+  68   2          //   }
+  69   2          // }
+  70   2          // Display_digital();
+  71   2        //  led=flag;
+  72   2        }
+  73   1      }
+  74          //void Display_digital()
+  75          //{
+  76          //  int i,j;
+  77          //  for(i=0;i<8;i++)
+  78          //  {
+  79          //    DIG_GPIO_DUAN=test[i];
+  80          //    DIG_GPIO_WEI=DIG_PLACE[i];
+  81          //    j=300;
+  82          //    while(j--);
+  83          //    DIG_GPIO_DUAN=0X00;
+  84          //  }
+  85          //}
+  86          
+  87          //char Keydown(void)//按键
+  88          //{
+  89          //  GPIO_KEY=0X0F;
+  90          //  if(GPIO_KEY!=0X0F)
+  91          //  {
+  92          //    Delay_5ms();
+  93          //    if(GPIO_KEY!=0X0F)
+  94          //    {
+  95          //      flag_key=1;
+  96          //      GPIO_KEY=0X0F;
+  97          //      switch (GPIO_KEY)
+  98          //       {
+  99          //        case 0X07: keyvalue=0;  break;
+ 100          //        case 0x0B: keyvalue=1;  break;
+ 101          //        case 0x0D: keyvalue=2;  break;
+ 102          //        case 0x0E: keyvalue=3;  break;
+ 103          //      }
+ 104          //      GPIO_KEY=0XF0;
+ 105          //      switch (GPIO_KEY)
+ 106          //      {
+ 107          //        case 0X70: keyvalue+=0;  break;
+ 108          //        case 0xB0: keyvalue+=4;  break;
+ 109          //        case 0xD0: keyvalue+=8;  break;
+ 110          //        case 0xE0: keyvalue+=12; break;
+ 111          //      }
+ 112          //      while(GPIO_KEY!=0XF0);
+ 113          //    }
+ 114          //  }
+ 115          //  return keyvalue;
+C51 COMPILER V9.01   MAIN                                                                  08/18/2016 19:59:31 PAGE 3   
 
- 115   1        ET0=1;//打开定时器中断
- 116   1        TR0=1;//打开定时器0
- 117   1      }
- 118          void It0(void) interrupt 0
- 119          {
- 120   1        EX0=0;
- 121   1        LCD1602_Writecom(0X01);
- 122   1        flag=~flag;
- 123   1        EX0=1;
- 124   1      }
- 125          void It1(void) interrupt 2
- 126          {
- 127   1        EX1=0;
- 128   1        flag=1;
- 129   1        EX1=1;
- 130   1      }
- 131          void TIMER0 (void) interrupt 1
- 132          {
- 133   1        TH0=(65536-1000)/256;
- 134   1        TL0=(65536-1000)%256;
- 135   1        timer++;
- 136   1        if(timer==1000)
- 137   1        {
- 138   2          P2=~P2;
- 139   2          timer=0;
- 140   2        }
- 141   1      }
- 142          void Usart_Init(void)
- 143          {
- 144   1        EA=1;
- 145   1        ES=1;
- 146   1        TR1=1;
- 147   1        TMOD=0X20;
- 148   1        SCON=0X50;
- 149   1        TH1=0XFD;
- 150   1        TL1=0XFD;
- 151   1      }
- 152          void Usart_interrput(void) interrupt 4
- 153          {
- 154   1        char buff;
- 155   1        if(RI)
- 156   1        {
- 157   2          RI=0;
- 158   2          buff=SBUF;
- 159   2          SBUF=buff;
- 160   2        }
- 161   1        else
- 162   1          TI=0;
- 163   1      }
+ 116          //}
+ 117          //void Interrupt_Init(void) //外部中断初始化
+ 118          //{
+ 119          //  EA=1;
+ 120          //  EX0=1;
+ 121          //  IT0=1;//下降沿触发
+ 122          
+ 123          //  EX1=1;
+ 124          //  IT1=1;
+ 125          //}
+ 126          //void TIM_Init(void)//定时器初始化
+ 127          //{
+ 128          //  EA=1;
+ 129          //  TMOD=0x01;//工作方式1
+ 130          //  TH0=(65536-1000)/256;
+ 131          //  TL0=(65536-1000)%256;
+ 132          //  ET0=1;//打开定时器中断
+ 133          //  TR0=1;//打开定时器0
+ 134          //}
+ 135          //void It0(void) interrupt 0
+ 136          //{
+ 137          //  EX0=0;
+ 138          //  LCD1602_Writecom(0X01);
+ 139          //  flag=~flag;
+ 140          //  EX0=1;
+ 141          //}
+ 142          //void It1(void) interrupt 2
+ 143          //{
+ 144          //  EX1=0;
+ 145          //  flag=1;
+ 146          //  EX1=1;
+ 147          //}
+ 148          //void TIMER0 (void) interrupt 1
+ 149          //{
+ 150          //  TH0=(65536-1000)/256;
+ 151          //  TL0=(65536-1000)%256;
+ 152          //  timer++;
+ 153          //  if(timer==1000)
+ 154          //  {
+ 155          //    P2=~P2;
+ 156          //    timer=0;
+ 157          //  }
+ 158          //}
+ 159          //void Usart_Init(void)
+ 160          //{
+ 161          //  EA=1;
+ 162          //  ES=1;
+ 163          //  TR1=1;
+ 164          //  TMOD=0X20;
+ 165          //  SCON=0X50;
+ 166          //  TH1=0XFD;
+ 167          //  TL1=0XFD;
+ 168          //}
+ 169          //void Usart_interrput(void) interrupt 4
+ 170          //{
+ 171          //  char buff;
+ 172          //  if(RI)
+ 173          //  {
+ 174          //    RI=0;
+ 175          //    // buff=SBUF;
+ 176          //    // SBUF=buff;
+ 177          //    uart_buff[uart_i]=SBUF;
+C51 COMPILER V9.01   MAIN                                                                  08/18/2016 19:59:31 PAGE 4   
+
+ 178          //    uart_i++;
+ 179          //  }
+ 180          //  else
+ 181          //    TI=0;
+ 182          //}
+ 183          // void Usart_pro()
+ 184          // {
+ 185          //   SBUF=uart_buff[];
+ 186          // }
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    426    ----
+   CODE SIZE        =     33    ----
    CONSTANT SIZE    =     25    ----
    XDATA SIZE       =   ----    ----
    PDATA SIZE       =   ----    ----
-   DATA SIZE        =     25       4
+   DATA SIZE        =     32    ----
    IDATA SIZE       =   ----    ----
    BIT SIZE         =   ----    ----
 END OF MODULE INFORMATION.
 
 
-C51 COMPILATION COMPLETE.  1 WARNING(S),  0 ERROR(S)
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
