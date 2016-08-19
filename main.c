@@ -17,8 +17,8 @@ unsigned char code DIG_CODE[17]={0x3f,0x06,0x5b,0x4f,0x66,0x6d,0x7d,0x07,0x7f,0x
 
 int main(void)
 {
-  unsigned char count,i;
-  unsigned char rece_buf[32]="8>52103876cADf857";
+  unsigned char count,i,flag_4=1;
+  unsigned char rece_buf[32]="8>52104876cADf857";
   LCD1602_Init();// LCD初始化
 //	while(NRF24L01_Check()); // 等待检测到NRF24L01，程序才会向下执行
   NRF24L01_RT_Init();
@@ -41,8 +41,10 @@ int main(void)
                )return -1;
         if(rece_buf[6]=='1')//显示发送数据并把数据保存到EEPROM里面
         {
+          LCD1602_Writestring("Write:");
           LCD1602_Writestring(rece_buf+7);//从第七位开始显示数据,把第七位的地址传给指针
           AT24C02_writestring(rece_buf+7);//从第七位开始保存数据,把第七位的地址传给指针
+          flag_4=1;
         }
         else if(rece_buf[6]=='2')//屏幕左移
         {
@@ -70,10 +72,15 @@ int main(void)
         }
         else if (rece_buf[6]=='4')//从EEPROM中读取数据，并用LCD1602显示出来
         {
-          LCD1602_Writedata('4');
-          for(count=0;rece_buf[count+7]!='\0';count++)
-          LCD1602_Writedata(AT24C02_read(count));
-          return ;
+          if(flag_4)
+          {
+            LCD1602_Writestring("Read:");
+            for(count=0;rece_buf[count+7]!='\0';count++)
+            {
+              LCD1602_Writedata(AT24C02_read(count));
+            }
+            flag_4=0;
+          }
         }
         else
         {
