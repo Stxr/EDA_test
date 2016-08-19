@@ -1,7 +1,7 @@
-"main.obj",
 "delay.obj",
-"NRF2401.obj",
 "I2C.obj",
 "EEPROM.obj",
-"LCD1602.obj" 
+"LCD1602.obj",
+"main.obj",
+"NRF2401.obj" 
 TO "EDC_test" 

@@ -49,7 +49,7 @@
           <CreateLib>0</CreateLib>
           <CreateHexFile>1</CreateHexFile>
           <DebugInformation>1</DebugInformation>
-          <BrowseInformation>1</BrowseInformation>
+          <BrowseInformation>0</BrowseInformation>
           <ListingPath>.\</ListingPath>
           <HexFormatSelection>0</HexFormatSelection>
           <Merge32K>0</Merge32K>
@@ -352,19 +352,14 @@
           <GroupName>Source Group 1</GroupName>
           <Files>
             <File>
-              <FileName>main.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\main.c</FilePath>
-            </File>
-            <File>
               <FileName>delay.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\delay.c</FilePath>
             </File>
             <File>
-              <FileName>LCD1602.c</FileName>
+              <FileName>NRF2401.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\LCD1602.c</FilePath>
+              <FilePath>.\NRF2401.c</FilePath>
             </File>
             <File>
               <FileName>I2C.c</FileName>
@@ -375,6 +370,11 @@
               <FileName>EEPROM.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\EEPROM.c</FilePath>
+            </File>
+            <File>
+              <FileName>LCD1602.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\LCD1602.c</FilePath>
             </File>
           </Files>
         </Group>

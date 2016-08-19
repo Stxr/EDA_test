@@ -21,6 +21,8 @@ void I2C_end(void)
   Delay_10us();
   I2C_SDA=1;
   Delay_10us();
+  I2C_SCL=0;
+  Delay_10us();
 }
 char I2C_sendbyte(char dat)
 {

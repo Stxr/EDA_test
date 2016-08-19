@@ -12,7 +12,7 @@
 #include "NRF2401.h"
 
 const uchar TX_ADDRESS[TX_ADR_WIDTH]={0xFF,0xFF,0xFF,0xFF,0xFF}; //发送地址
-const uchar RX_ADDRESS[RX_ADR_WIDTH]={0xFF,0xFF,0xFF,0xFF,0xFF}; //发送地址
+const uchar RX_ADDRESS[RX_ADR_WIDTH]={0xFF,0xFF,0xFF,0x52,0x10}; //发送地址
 
 
 // sbit LED=P1^0;
@@ -20,12 +20,12 @@ const uchar RX_ADDRESS[RX_ADR_WIDTH]={0xFF,0xFF,0xFF,0xFF,0xFF}; //发送地址
 // sbit S1=P3^2;
 // sbit S2=P3^4;
 // uchar rece_buf[32];
-sbit NRF_CE   = P2^7;
-sbit NRF_CSN  = P2^6;
-sbit NRF_MISO = P2^3;
-sbit NRF_MOSI = P2^4;
-sbit NRF_SCK  = P2^5;
-sbit NRF_IRQ  = P2^2;
+sbit NRF_CE   = P0^7;
+sbit NRF_CSN  = P0^6;
+sbit NRF_MISO = P0^3;
+sbit NRF_MOSI = P0^4;
+sbit NRF_SCK  = P0^5;
+sbit NRF_IRQ  = P0^2;
 
 void delay_us(uchar num)
 {
