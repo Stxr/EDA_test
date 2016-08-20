@@ -67,16 +67,22 @@
 const uchar TX_ADDRESS[TX_ADR_WIDTH]={0xFF,0xFF,0xFF,0xFF,0xFF}; //发送地址
 const uchar RX_ADDRESS[RX_ADR_WIDTH]={0xFF,0xFF,0xFF,0xFF,0xFF}; //发送地址
 
-sbit NRF_CE   = P2^7;
-sbit NRF_CSN  = P2^6;
-sbit NRF_MISO = P2^3;
-sbit NRF_MOSI = P2^4;
-sbit NRF_SCK  = P2^5;
-sbit NRF_IRQ  = P2^2;
-sbit LED=P1^0;
+// sbit NRF_CE   = P2^7;
+// sbit NRF_CSN  = P2^6;
+// sbit NRF_MISO = P2^3;
+// sbit NRF_MOSI = P2^4;
+// sbit NRF_SCK  = P2^5;
+// sbit NRF_IRQ  = P2^2;
+sbit NRF_CE   = P3^0;
+sbit NRF_SCK  = P3^1;
+sbit NRF_MISO = P3^2;
+sbit NRF_CSN  = P3^3;
+sbit NRF_MOSI = P3^4;
+sbit NRF_IRQ  = P3^5;
+// sbit LED=P3^0;
 
-sbit S1=P3^2;
-sbit S2=P3^4;
+//sbit S1=P3^2;
+//sbit S2=P3^4;
 uchar rece_buf[32];
 
 void Sendlength(uchar *buff);
@@ -296,10 +302,12 @@ int main(void)
 {
 	while(NRF24L01_Check()); // 等待检测到NRF24L01，程序才会向下执行
 	NRF24L01_RT_Init();
+	sendstring("start");
 	while(1)
 	{
 		if(NRF_IRQ==0)	 	// 如果无线模块接收到数据
 		{
+				//sendstring("stat");
 			if(NRF24L01_RxPacket(rece_buf)==0)
 			{
 				// tcnt=rece_buf[0];
