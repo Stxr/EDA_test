@@ -1,4 +1,4 @@
-C51 COMPILER V9.01   NRF2401                                                               08/19/2016 11:07:21 PAGE 1   
+C51 COMPILER V9.01   NRF2401                                                               08/20/2016 14:19:39 PAGE 1   
 
 
 C51 COMPILER V9.01, COMPILATION OF MODULE NRF2401
@@ -21,7 +21,7 @@ line level    source
   12          #include "NRF2401.h"
   13          
   14          const uchar TX_ADDRESS[TX_ADR_WIDTH]={0xFF,0xFF,0xFF,0xFF,0xFF}; //发送地址
-  15          const uchar RX_ADDRESS[RX_ADR_WIDTH]={0xFF,0xFF,0xFF,0x52,0x10}; //发送地址
+  15          const uchar RX_ADDRESS[RX_ADR_WIDTH]={0xFF,0xFF,0xFF,0xFF,0xFF}; //发送地址
   16          
   17          
   18          // sbit LED=P1^0;
@@ -29,12 +29,12 @@ line level    source
   20          // sbit S1=P3^2;
   21          // sbit S2=P3^4;
   22          // uchar rece_buf[32];
-  23          sbit NRF_CE   = P0^7;
-  24          sbit NRF_CSN  = P0^6;
-  25          sbit NRF_MISO = P0^3;
-  26          sbit NRF_MOSI = P0^4;
-  27          sbit NRF_SCK  = P0^5;
-  28          sbit NRF_IRQ  = P0^2;
+  23          sbit NRF_CE   = P1^0;
+  24          sbit NRF_SCK  = P1^1;
+  25          sbit NRF_MISO = P1^2;
+  26          sbit NRF_CSN  = P1^3;
+  27          sbit NRF_MOSI = P1^4;
+  28          sbit NRF_IRQ  = P1^5;
   29          
   30          void delay_us(uchar num)
   31          {
@@ -62,7 +62,7 @@ line level    source
   53   2          byte|=NRF_MISO;             // capture current MISO bit
   54   2          NRF_SCK=0;
   55   2        }
-C51 COMPILER V9.01   NRF2401                                                               08/19/2016 11:07:21 PAGE 2   
+C51 COMPILER V9.01   NRF2401                                                               08/20/2016 14:19:39 PAGE 2   
 
   56   1        return byte;
   57   1      }
@@ -126,7 +126,7 @@ line level    source
  115          uchar NRF24L01_Write_Buf(uchar reg, uchar *pBuf, uchar len)
  116          {
  117   1        uchar status,u8_ctr;
-C51 COMPILER V9.01   NRF2401                                                               08/19/2016 11:07:21 PAGE 3   
+C51 COMPILER V9.01   NRF2401                                                               08/20/2016 14:19:39 PAGE 3   
 
  118   1        NRF_CSN=0;
  119   1          status = SPI_RW(reg);     //发送寄存器值(位置),并读取状态值
@@ -190,7 +190,7 @@ line level    source
  177          
  178          /********************************************/
  179          /* 函数功能：检测24L01是否存在              */
-C51 COMPILER V9.01   NRF2401                                                               08/19/2016 11:07:21 PAGE 4   
+C51 COMPILER V9.01   NRF2401                                                               08/20/2016 14:19:39 PAGE 4   
 
  180          /* 返回值；  0  存在                        */
  181          /*           1  不存在                      */
@@ -254,7 +254,7 @@ line level    source
  235          //  NRF24L01_RT_Init();
  236          //  while(1)
  237          //  {
-C51 COMPILER V9.01   NRF2401                                                               08/19/2016 11:07:21 PAGE 5   
+C51 COMPILER V9.01   NRF2401                                                               08/20/2016 14:19:39 PAGE 5   
 
  238          //    if(NRF_IRQ==0)    // 如果无线模块接收到数据
  239          //    {
@@ -318,7 +318,7 @@ MODULE INFORMATION:   STATIC OVERLAYABLE
    DATA SIZE        =   ----    ----
    IDATA SIZE       =   ----    ----
    BIT SIZE         =   ----    ----
-C51 COMPILER V9.01   NRF2401                                                               08/19/2016 11:07:21 PAGE 6   
+C51 COMPILER V9.01   NRF2401                                                               08/20/2016 14:19:39 PAGE 6   
 
 END OF MODULE INFORMATION.
 

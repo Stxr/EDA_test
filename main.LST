@@ -1,4 +1,4 @@
-C51 COMPILER V9.01   MAIN                                                                  08/19/2016 13:35:07 PAGE 1   
+C51 COMPILER V9.01   MAIN                                                                  08/20/2016 14:19:38 PAGE 1   
 
 
 C51 COMPILER V9.01, COMPILATION OF MODULE MAIN
@@ -15,104 +15,130 @@ line level    source
    6          #include "NRF2401.h"
    7          #define GPIO_KEY P1
    8          #define DIG_GPIO_DUAN P3
-   9          #define DIG_GPIO_WEI P1
-  10          
-  11          sbit NRF_IR  = P0^2;
-  12          
-  13          unsigned char rece_buf[32];
-  14          unsigned char code DIG_PLACE[8]={0xfe,0xfd,0xfb,0xf7,0xef,0xdf,0xbf,0x7f};//位选控制   查表的方法
+   9          sbit LSA=P2^2;
+  10          sbit LSB=P2^3;
+  11          sbit LSC=P2^4;
+  12          sbit NRF_IR  = P1^5;
+  13          
+  14          unsigned char rece_buf[32];
+  15          unsigned char code DIG_PLACE[8]={0xfe,0xfd,0xfb,0xf7,0xef,0xdf,0xbf,0x7f};//位选控制   查表的方法
              -控制
-  15          unsigned char code DIG_CODE[17]={0x3f,0x06,0x5b,0x4f,0x66,0x6d,0x7d,0x07,0x7f,0x6f,0x77,0x7c,0x39,0x5e,0x7
+  16          unsigned char code DIG_CODE[17]={0x3f,0x06,0x5b,0x4f,0x66,0x6d,0x7d,0x07,0x7f,0x6f,0x77,0x7c,0x39,0x5e,0x7
              -9,0x71};  //0~F的显示码
-  16          
   17          
-  18          int main(void)
-  19          {
-  20   1        unsigned char count,i,flag_4=1;
-  21   1        unsigned char rece_buf[32]="8>52104876cADf857";
-  22   1        LCD1602_Init();// LCD初始化
-  23   1      //  while(NRF24L01_Check()); // 等待检测到NRF24L01，程序才会向下执行
-  24   1        NRF24L01_RT_Init();
-  25   1        // LCD1602_Writestring(test+7);
-  26   1        while(1)
-  27   1        {
-  28   2      
+  18          
+  19          int main(void)
+  20          {
+  21   1        unsigned char count,i,flag_4=1; //flag_4读取标志位，避免重复读取
+  22   1      //  unsigned char rece_buf[32]="8>52103876cADf857";
+  23   1        LCD1602_Init();// LCD初始化
+  24   1        while(NRF24L01_Check()); // 等待检测到NRF24L01，程序才会向下执行
+  25   1        NRF24L01_RT_Init();
+  26   1        LCD1602_Writestring("R");
+  27   1        while(1)
+  28   1        {
   29   2          if(NRF_IR==0)   // 如果无线模块接收到数据
   30   2          {
-  31   3            // if(NRF24L01_RxPacket(rece_buf)==0)
-  32   3            {
-  33   4              if(rece_buf[1]!='>')
-  34   4              {
-  35   5                sendstring("Please start with >\n");
-  36   5              }
-  37   4              else if(rece_buf[2]!='5'&&\
-  38   4                      rece_buf[3]!='2'&&\
-  39   4                      rece_buf[4]!='1'&&\
-  40   4                      rece_buf[5]!='0'
-  41   4                     )return -1;
-  42   4              if(rece_buf[6]=='1')//显示发送数据并把数据保存到EEPROM里面
-  43   4              {
-  44   5                LCD1602_Writestring("Write:");
-  45   5                LCD1602_Writestring(rece_buf+7);//从第七位开始显示数据,把第七位的地址传给指�
+  31   3            LCD1602_Writestring("I");
+  32   3            if(NRF24L01_RxPacket(rece_buf)==0)
+  33   3            {
+  34   4              if(rece_buf[1]!='>')
+  35   4              {
+  36   5                sendstring("Please start with >\n");
+  37   5              }
+  38   4              else if(rece_buf[2]!='5'&&\
+  39   4                      rece_buf[3]!='2'&&\
+  40   4                      rece_buf[4]!='1'&&\
+  41   4                      rece_buf[5]!='0'
+  42   4                     )return -1;
+  43   4              if(rece_buf[6]=='1')//显示发送数据并把数据保存到EEPROM里面
+  44   4              {
+  45   5                LCD1602_Writestring("H");
+  46   5                // sendstring("display and save data\n");
+  47   5                LCD1602_Writestring("Write:");
+  48   5                LCD1602_Writestring(rece_buf+7);//从第七位开始显示数据,把第七位的地址传给指�
              -��
-  46   5                AT24C02_writestring(rece_buf+7);//从第七位开始保存数据,把第七位的地址传给指�
+  49   5                AT24C02_writestring(rece_buf+7);//从第七位开始保存数据,把第七位的地址传给指�
              -��
-  47   5                flag_4=1;
-  48   5              }
-  49   4              else if(rece_buf[6]=='2')//屏幕左移
-  50   4              {
-  51   5                  LCD1602_Writestring(rece_buf+7);//从第七位开始显示数据,把第七位的地址传给�
-C51 COMPILER V9.01   MAIN                                                                  08/19/2016 13:35:07 PAGE 2   
+  50   5                flag_4=1;
+  51   5              }
+C51 COMPILER V9.01   MAIN                                                                  08/20/2016 14:19:38 PAGE 2   
 
+  52   4              else if(rece_buf[6]=='2')//屏幕左移
+  53   4              {
+  54   5                  // sendstring("move left\n");
+  55   5                  LCD1602_Writestring(rece_buf+7);//从第七位开始显示数据,把第七位的地址传给�
              -�针
-  52   5                  for(count=0;count<14;count++)
-  53   5                  {
-  54   6                    LCD1602_Writecom(0X18);//整屏左移
-  55   6                    Delay_500ms();
-  56   6                  }
-  57   5              }
-  58   4              else if(rece_buf[6]=='3')//用数码管显示数据
-  59   4              {
-  60   5                for(count=0;count<8;count++)
-  61   5                {
-  62   6                  DIG_GPIO_WEI=DIG_PLACE[count];
-  63   6                  if(rece_buf[count+7]<='9')
-  64   6                    DIG_GPIO_DUAN=DIG_CODE[rece_buf[count+7]-'0'];
-  65   6                  else if(rece_buf[count+7]<='f'&&rece_buf[count+7]>='a')
-  66   6                    DIG_GPIO_DUAN=DIG_CODE[rece_buf[count+7]-'a'+10];
-  67   6                  else if(rece_buf[count+7]<='F'&&rece_buf[count+7]>='A')
-  68   6                    DIG_GPIO_DUAN=DIG_CODE[rece_buf[count+7]-'A'+10];
-  69   6                  i=500;
-  70   6                  while(i--);
-  71   6                }
-  72   5              }
-  73   4              else if (rece_buf[6]=='4')//从EEPROM中读取数据，并用LCD1602显示出来
-  74   4              {
-  75   5                if(flag_4)
-  76   5                {
-  77   6                  LCD1602_Writestring("Read:");
-  78   6                  for(count=0;rece_buf[count+7]!='\0';count++)
-  79   6                  {
-  80   7                    LCD1602_Writedata(AT24C02_read(count));
-  81   7                  }
-  82   6                  flag_4=0;
-  83   6                }
-  84   5              }
-  85   4              else
-  86   4              {
-  87   5                sendstring("Please check the fifth character(0-4)\n");
-  88   5              }
-  89   4             }
-  90   3           }
-  91   2         }
-  92   1      }
+  56   5                  for(count=0;count<14;count++)
+  57   5                  {
+  58   6                    LCD1602_Writecom(0X18);//整屏左移
+  59   6                    Delay_500ms();
+  60   6                  }
+  61   5              }
+  62   4              else if(rece_buf[6]=='3')//用数码管显示数据
+  63   4              {
+  64   5                // sendstring("Display on the digital_control\n");
+  65   5                for(count=0;count<8;count++)
+  66   5                {
+  67   6                  switch(count)  //位选，选择点亮的数码管，
+  68   6                  {
+  69   7                    case(0):
+  70   7                      LSA=0;LSB=0;LSC=0; break;//显示第0位
+  71   7                    case(1):
+  72   7                      LSA=1;LSB=0;LSC=0; break;//显示第1位
+  73   7                    case(2):
+  74   7                      LSA=0;LSB=1;LSC=0; break;//显示第2位
+  75   7                    case(3):
+  76   7                      LSA=1;LSB=1;LSC=0; break;//显示第3位
+  77   7                    case(4):
+  78   7                      LSA=0;LSB=0;LSC=1; break;//显示第4位
+  79   7                    case(5):
+  80   7                      LSA=1;LSB=0;LSC=1; break;//显示第5位
+  81   7                    case(6):
+  82   7                      LSA=0;LSB=1;LSC=1; break;//显示第6位
+  83   7                    case(7):
+  84   7                      LSA=1;LSB=1;LSC=1; break;//显示第7位
+  85   7                  }
+  86   6                  if(rece_buf[count+7]<='9')
+  87   6                    DIG_GPIO_DUAN=DIG_CODE[rece_buf[count+7]-'0'];
+  88   6                  else if(rece_buf[count+7]<='f'&&rece_buf[count+7]>='a')
+  89   6                    DIG_GPIO_DUAN=DIG_CODE[rece_buf[count+7]-'a'+10];
+  90   6                  else if(rece_buf[count+7]<='F'&&rece_buf[count+7]>='A')
+  91   6                    DIG_GPIO_DUAN=DIG_CODE[rece_buf[count+7]-'A'+10];
+  92   6                  i=500;  //消抖
+  93   6                  while(i--);
+  94   6                }
+  95   5              }
+  96   4              else if (rece_buf[6]=='4')//从EEPROM中读取数据，并用LCD1602显示出来
+  97   4              {
+  98   5                if(flag_4)
+  99   5                {
+ 100   6                  // sendstring("display and read from EEPROM\n");
+ 101   6                  LCD1602_Writestring("Read:");
+ 102   6                  for(count=0;rece_buf[count+7]!='\0';count++)
+ 103   6                  {
+ 104   7                    LCD1602_Writedata(AT24C02_read(count));
+ 105   7                  }
+ 106   6                  flag_4=0;
+ 107   6                }
+ 108   5              }
+ 109   4              else
+ 110   4              {
+ 111   5                sendstring("Please check the fifth character(0-4)\n");
+ 112   5              }
+C51 COMPILER V9.01   MAIN                                                                  08/20/2016 14:19:38 PAGE 3   
+
+ 113   4             }
+ 114   3           }
+ 115   2         }
+ 116   1      }
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    331    ----
-   CONSTANT SIZE    =    130    ----
+   CODE SIZE        =    444    ----
+   CONSTANT SIZE    =    104    ----
    XDATA SIZE       =   ----    ----
-   PDATA SIZE       =     32      34
+   PDATA SIZE       =     32       2
    DATA SIZE        =   ----    ----
    IDATA SIZE       =   ----    ----
    BIT SIZE         =   ----    ----
