@@ -1,4 +1,4 @@
-C51 COMPILER V9.01   MAIN                                                                  08/21/2016 13:58:58 PAGE 1   
+C51 COMPILER V9.01   MAIN                                                                  08/21/2016 14:08:13 PAGE 1   
 
 
 C51 COMPILER V9.01, COMPILATION OF MODULE MAIN
@@ -62,75 +62,75 @@ line level    source
   51   7                              LCD1602_Writestring("Write:");
   52   7                              LCD1602_Writestring(rece_buf+7);//从第七位开始显示数据,把第七位的�
              -�址传给指针
-C51 COMPILER V9.01   MAIN                                                                  08/21/2016 13:58:58 PAGE 2   
+C51 COMPILER V9.01   MAIN                                                                  08/21/2016 14:08:13 PAGE 2   
 
   53   7                              AT24C02_writestring(rece_buf+7);//从第七位开始保存数据,把第七位的�
              -�址传给指针
-  54   7                              // AT24C02_write(0,rece_buf[8]);
-  55   7                              flag_4=1;
-  56   7                              break;
-  57   7                    case '2':  //屏幕左移
-  58   7                              sendstring("move left\n");
-  59   7                              LCD1602_Writestring(rece_buf+7);//从第七位开始显示数据,把第七位的�
-             -�址传给指针
-  60   7                              for(count=0;count<14;count++)
-  61   7                              {
-  62   8                                LCD1602_Writecom(0X18);//整屏左移
-  63   8                                Delay_500ms();
-  64   8                              }
-  65   7                              break;
-  66   7                    case '3'://用数码管显示数据
-  67   7                              sendstring("Display on the digital_control\n");
-  68   7                              while (rece_buf[6]=='3')
-  69   7                              {
-  70   8                                NRF24L01_RxPacket(rece_buf);
-  71   8                                for(count=0;count<8;count++)
-  72   8                                {
-  73   9                                  switch(count)  //位选，选择点亮的数码管，
-  74   9                                  {
-  75  10                                    case(0):
-  76  10                                    LSA=0;LSB=0;LSC=0; break;//显示第0位
-  77  10                                    case(1):
-  78  10                                    LSA=1;LSB=0;LSC=0; break;//显示第1位
-  79  10                                    case(2):
-  80  10                                    LSA=0;LSB=1;LSC=0; break;//显示第2位
-  81  10                                    case(3):
-  82  10                                    LSA=1;LSB=1;LSC=0; break;//显示第3位
-  83  10                                    case(4):
-  84  10                                    LSA=0;LSB=0;LSC=1; break;//显示第4位
-  85  10                                    case(5):
-  86  10                                    LSA=1;LSB=0;LSC=1; break;//显示第5位
-  87  10                                    case(6):
-  88  10                                    LSA=0;LSB=1;LSC=1; break;//显示第6位
-  89  10                                    case(7):
-  90  10                                    LSA=1;LSB=1;LSC=1; break;//显示第7位
-  91  10                                  }
-  92   9                                  if(rece_buf[count+7]<='9')
-  93   9                                  DIG_GPIO_DUAN=DIG_CODE[rece_buf[count+7]-'0'];
-  94   9                                  else if(rece_buf[count+7]<='f'&&rece_buf[count+7]>='a')
-  95   9                                  DIG_GPIO_DUAN=DIG_CODE[rece_buf[count+7]-'a'+10];
-  96   9                                  else if(rece_buf[count+7]<='F'&&rece_buf[count+7]>='A')
-  97   9                                  DIG_GPIO_DUAN=DIG_CODE[rece_buf[count+7]-'A'+10];
-  98   9                                  i=500;  //消抖
-  99   9                                  while(i--);
- 100   9                                }
- 101   8                              }
- 102   7                              break;
- 103   7                    case '4'://从EEPROM中读取数据，并用LCD1602显示出来
- 104   7                              sendstring("display and read from EEPROM\n");
- 105   7                          //    if(flag_4)
- 106   7                              {
- 107   8                                LCD1602_Writecom(0X01);
- 108   8                                LCD1602_Writestring("Read:");
- 109   8                                for(count=0;rece_buf[count+7]!='\0';count++)
- 110   8                                {
- 111   9                                  LCD1602_Writedata(AT24C02_read(count));
- 112   9                                }
-C51 COMPILER V9.01   MAIN                                                                  08/21/2016 13:58:58 PAGE 3   
+  54   7                              flag_4=1;
+  55   7                              break;
+  56   7                    case '2':  //屏幕左移
+  57   7                              sendstring("move left\n");
+  58   7                            //  LCD1602_Writestring(rece_buf+7);//从第七位开始显示数据,把第七位的
+             -地址传给指针
+  59   7                              for(count=0;count<14;count++)
+  60   7                              {
+  61   8                                LCD1602_Writecom(0X18);//整屏左移
+  62   8                                Delay_100ms();
+  63   8                              }
+  64   7                              break;
+  65   7                    case '3'://用数码管显示数据
+  66   7                              sendstring("Display on the digital_control\n");
+  67   7                              LCD1602_Writecom(0X01);
+  68   7                              LCD1602_Writestring("Display on the ");
+  69   7                              LCD1602_Writecom(0x80+0x40);
+  70   7                              LCD1602_Writestring("digital_control");
+  71   7                              while (rece_buf[6]=='3')
+  72   7                              {
+  73   8                                NRF24L01_RxPacket(rece_buf);
+  74   8                                for(count=0;count<8;count++)
+  75   8                                {
+  76   9                                  switch(count)  //位选，选择点亮的数码管，
+  77   9                                  {
+  78  10                                    case(0):
+  79  10                                    LSA=0;LSB=0;LSC=0; break;//显示第0位
+  80  10                                    case(1):
+  81  10                                    LSA=1;LSB=0;LSC=0; break;//显示第1位
+  82  10                                    case(2):
+  83  10                                    LSA=0;LSB=1;LSC=0; break;//显示第2位
+  84  10                                    case(3):
+  85  10                                    LSA=1;LSB=1;LSC=0; break;//显示第3位
+  86  10                                    case(4):
+  87  10                                    LSA=0;LSB=0;LSC=1; break;//显示第4位
+  88  10                                    case(5):
+  89  10                                    LSA=1;LSB=0;LSC=1; break;//显示第5位
+  90  10                                    case(6):
+  91  10                                    LSA=0;LSB=1;LSC=1; break;//显示第6位
+  92  10                                    case(7):
+  93  10                                    LSA=1;LSB=1;LSC=1; break;//显示第7位
+  94  10                                  }
+  95   9                                  if(rece_buf[count+7]<='9')
+  96   9                                  DIG_GPIO_DUAN=DIG_CODE[rece_buf[count+7]-'0'];
+  97   9                                  else if(rece_buf[count+7]<='f'&&rece_buf[count+7]>='a')
+  98   9                                  DIG_GPIO_DUAN=DIG_CODE[rece_buf[count+7]-'a'+10];
+  99   9                                  else if(rece_buf[count+7]<='F'&&rece_buf[count+7]>='A')
+ 100   9                                  DIG_GPIO_DUAN=DIG_CODE[rece_buf[count+7]-'A'+10];
+ 101   9                                  i=500;  //消抖
+ 102   9                                  while(i--);
+ 103   9                                }
+ 104   8                              }
+ 105   7                              break;
+ 106   7                    case '4'://从EEPROM中读取数据，并用LCD1602显示出来
+ 107   7                              sendstring("display and read from EEPROM\n");
+ 108   7                              LCD1602_Writecom(0X01);
+ 109   7                              LCD1602_Writestring("Read:");
+ 110   7                              for(count=0;rece_buf[count+7]!='\0';count++)
+ 111   7                              {
+ 112   8                                LCD1602_Writedata(AT24C02_read(count));
+C51 COMPILER V9.01   MAIN                                                                  08/21/2016 14:08:13 PAGE 3   
 
- 113   8                                flag_4=0;
- 114   8                              }
- 115   7                             break;
+ 113   8                              }
+ 114   7                              flag_4=0;
+ 115   7                              break;
  116   7                    default :
  117   7                              sendstring("The fifth number error (0-4)\n");
  118   7                              break;
@@ -144,8 +144,8 @@ line level    source
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    465    ----
-   CONSTANT SIZE    =    185    ----
+   CODE SIZE        =    484    ----
+   CONSTANT SIZE    =    217    ----
    XDATA SIZE       =   ----    ----
    PDATA SIZE       =     32       2
    DATA SIZE        =   ----    ----

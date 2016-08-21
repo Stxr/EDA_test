@@ -51,20 +51,23 @@ int main(void)
                         LCD1602_Writestring("Write:");
                         LCD1602_Writestring(rece_buf+7);//从第七位开始显示数据,把第七位的地址传给指针
                         AT24C02_writestring(rece_buf+7);//从第七位开始保存数据,把第七位的地址传给指针
-                        // AT24C02_write(0,rece_buf[8]);
                         flag_4=1;
                         break;
               case '2':  //屏幕左移
                         sendstring("move left\n");
-                        LCD1602_Writestring(rece_buf+7);//从第七位开始显示数据,把第七位的地址传给指针
+                      //  LCD1602_Writestring(rece_buf+7);//从第七位开始显示数据,把第七位的地址传给指针
                         for(count=0;count<14;count++)
                         {
                           LCD1602_Writecom(0X18);//整屏左移
-                          Delay_500ms();
+                          Delay_100ms();
                         }
                         break;
               case '3'://用数码管显示数据
                         sendstring("Display on the digital_control\n");
+                        LCD1602_Writecom(0X01);
+                        LCD1602_Writestring("Display on the ");
+                        LCD1602_Writecom(0x80+0x40);
+                        LCD1602_Writestring("digital_control");
                         while (rece_buf[6]=='3')
                         {
                           NRF24L01_RxPacket(rece_buf);
@@ -102,17 +105,14 @@ int main(void)
                         break;
               case '4'://从EEPROM中读取数据，并用LCD1602显示出来
                         sendstring("display and read from EEPROM\n");
-                    //    if(flag_4)
+                        LCD1602_Writecom(0X01);
+                        LCD1602_Writestring("Read:");
+                        for(count=0;rece_buf[count+7]!='\0';count++)
                         {
-                          LCD1602_Writecom(0X01);
-                          LCD1602_Writestring("Read:");
-                          for(count=0;rece_buf[count+7]!='\0';count++)
-                          {
-                            LCD1602_Writedata(AT24C02_read(count));
-                          }
-                          flag_4=0;
+                          LCD1602_Writedata(AT24C02_read(count));
                         }
-                       break;
+                        flag_4=0;
+                        break;
               default :
                         sendstring("The fifth number error (0-4)\n");
                         break;
