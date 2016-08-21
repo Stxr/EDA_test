@@ -20,24 +20,24 @@ const uchar RX_ADDRESS[RX_ADR_WIDTH]={0xFF,0xFF,0xFF,0xFF,0xFF}; //发送地址
 // sbit S1=P3^2;
 // sbit S2=P3^4;
 // uchar rece_buf[32];
-sbit NRF_CE   = P1^0;
-sbit NRF_SCK  = P1^1;
-sbit NRF_MISO = P1^2;
-sbit NRF_CSN  = P1^3;
-sbit NRF_MOSI = P1^4;
-sbit NRF_IRQ  = P1^5;
+sbit NRF_CE   = P3^0;
+sbit NRF_SCK  = P3^1;
+sbit NRF_MISO = P3^2;
+sbit NRF_CSN  = P3^3;
+sbit NRF_MOSI = P3^4;
+sbit NRF_IRQ  = P3^5;
 
 void delay_us(uchar num)
 {
 	uchar i;
-	for(i=0;i>num;i++)
+	for(i=0;i<num;i++)
  	_nop_();
 }
 void delay_150us()
 {
 	uint i;
 
-	for(i=0;i>150;i++);
+	for(i=0;i<150;i++);
 }
 /***************************************************************/
 

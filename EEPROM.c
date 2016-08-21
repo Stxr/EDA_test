@@ -6,7 +6,7 @@ void AT24C02_write(char addr,char dat)
   I2C_sendbyte(addr);
   I2C_sendbyte(dat);
   I2C_end();
-  Delay_5ms();
+  Delay_1ms();
 }
 char AT24C02_read(char addr)
 {
@@ -23,8 +23,9 @@ char AT24C02_read(char addr)
 void AT24C02_writestring(char *s)
 {
   char i;
-  for(i=0;s[1]!='\0';i++)
+  for(i=0;s[i]!='\0';i++)
   {
     AT24C02_write(i,s[i]);
+    Delay_10ms();
   }
 }
