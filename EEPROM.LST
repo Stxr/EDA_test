@@ -1,4 +1,4 @@
-C51 COMPILER V9.01   EEPROM                                                                08/20/2016 14:19:38 PAGE 1   
+C51 COMPILER V9.01   EEPROM                                                                08/21/2016 13:59:50 PAGE 1   
 
 
 C51 COMPILER V9.01, COMPILATION OF MODULE EEPROM
@@ -16,7 +16,7 @@ line level    source
    7   1        I2C_sendbyte(dat);
    8   1        I2C_end();
 *** WARNING C206 IN LINE 8 OF EEPROM.C: 'I2C_end': missing function-prototype
-   9   1        Delay_5ms();
+   9   1        Delay_1ms();
   10   1      }
   11          char AT24C02_read(char addr)
   12          {
@@ -33,15 +33,16 @@ line level    source
   23          void AT24C02_writestring(char *s)
   24          {
   25   1        char i;
-  26   1        for(i=0;s[1]!='\0';i++)
+  26   1        for(i=0;s[i]!='\0';i++)
   27   1        {
   28   2          AT24C02_write(i,s[i]);
-  29   2        }
-  30   1      }
+  29   2          Delay_10ms();
+  30   2        }
+  31   1      }
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    135    ----
+   CODE SIZE        =    134    ----
    CONSTANT SIZE    =   ----    ----
    XDATA SIZE       =   ----    ----
    PDATA SIZE       =   ----       8
